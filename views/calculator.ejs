@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Calarry Counter - Calculator</title>
+
+    <link type="text/css" href="/styles.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- the dash after % means it won't escape any HTML characters -->
+    <%- include("header") %>
+
+<div class = "new-entry">
+
+    <select>
+        <% for (let foodNum = 0; foodNum < foodList.rows.length; foodNum+=1) { %>
+            <option value = "<%= foodList.rows[foodNum]["id"] %>"><%= foodList.rows[foodNum]["value"][0] %></option>
+        <% } %>
+    </select>
+
+<p>Amounts marked *0 denote an unlisted or unavailable number.</p>
+
+<%- include("footer") %>
+
+</div>
+
+</body>
+</html>

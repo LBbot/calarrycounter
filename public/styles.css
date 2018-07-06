@@ -1,0 +1,157 @@
+* {
+    margin: 0 auto;
+    padding: 0;
+}
+
+body {
+    /* font-family: "Arial", serif; */
+    font-family: -apple-system,BlinkMacSystemFont,\.SFNSText-Bold,Roboto,Segoe UI,Helvetica Neue,Lucida Grande,sans-serif;
+    background-color: white;
+    text-align: center;
+}
+
+header {
+    background-color: #0375B4;
+    color: white;
+    /* font-family: "Rubik", sans-serif; */
+    text-align: center;
+    padding: 0.5em;
+}
+
+footer {
+    margin-top: 2em;
+}
+
+ul.navul {
+    list-style-type: none;
+}
+
+li.navli {
+    display: inline-block;
+    padding: 0 1em;
+}
+
+.tablecontainer {
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* border: 1px solid black;
+    border-radius: 10px;
+    margin: 0; */
+}
+
+table {
+    border-collapse: collapse;
+    font-size: small;
+    margin-bottom: 1em;
+}
+
+th {
+    color: black;
+    padding: 0.5em;
+    text-align: center;
+    background-color: white;
+}
+
+td {
+    text-align: right;
+    padding: 0.5em;
+    border-left: 1px solid #E3E2DF;
+}
+
+td:first-child {
+    border-left: none;
+}
+
+tr {
+    background-color: white;
+}
+
+tr:nth-child(even) {
+    background-color: rgb(238, 238, 238);
+}
+
+.buttoncontainer {
+    display: inline;
+}
+
+a:link {
+    color: #0375B4;
+    text-decoration: none;
+}
+
+a:visited {
+    color: #0375B4;
+    font-weight: bold;
+}
+
+a:hover {
+    color: gray;
+    text-decoration: underline;
+}
+
+li a:link {
+    color: white;
+    text-decoration: none;
+}
+
+li a:visited {
+    color: white;
+    text-decoration: none;
+}
+
+li a:hover {
+    text-decoration: underline;
+    color: rgb(238, 238, 238);
+}
+
+ul.infolist {
+    list-style-type: none;
+    margin: auto;
+    padding: 1em;
+    text-align: left;
+}
+
+.new-entry {
+    margin: 1em 1em 2em 1em;
+    padding: 1em;
+    background-color: white;
+    /* border-radius: 10px; */
+    max-width: 800px;
+    margin: 0 auto;
+    font-size: small;
+}
+
+label, input {
+    display: inline-block;
+}
+
+label {
+    width: 25%;
+    text-align: right;
+    margin: 0 auto;
+}
+
+input {
+    width:25%;
+}
+
+@media (max-width: 600px) {
+
+    .new-entry {
+        font-size: medium;
+    }
+
+    label, input {
+        display: block;
+    }
+
+    input {
+        width: 100%;
+        text-align: center;
+    }
+
+    label {
+        width: 100%;
+        text-align: center;
+    }
+}
