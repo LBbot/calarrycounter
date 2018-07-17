@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 "use strict";
 const fetch = require("node-fetch");
 
@@ -14,10 +15,6 @@ function get(url, path) {
         .then(function (response) {
             return response.json();
         }).then(function (body) {
-            if (body.error) {
-                console.log("HELP Error: " + body.error);
-                // Should exit or throw here
-            }
             return body;
         });
 }
@@ -33,23 +30,9 @@ function post(url, data) {
     }).then(function (response) {
         response.json();
     }).then(function (body) {
-        // if (body.error) {
-        //     // throw new Error(body.reason || body.error);
-        //     console.log("Error hit on FETCH POST");
-        // }
-        console.log("Successfully added to database.");
         return body;
     });
 }
-// });
-//             console.log("Successfully added to database.");
-//             return body;
-//         );
-//     }) .catch(function (reason) {
-//         console.log("Horrible error:" + reason);
-//         // Should exit or throw here
-//     });
-// }
 
 
 // Delete
@@ -63,10 +46,6 @@ function docDelete(url, id, rev) {
         method: "DELETE"
     }).then(function (response) {
         response.json().then(function (body) {
-            if (body.error) {
-                console.log("Hit error thingy");
-                // throw new Error(body.reason || body.error);
-            }
             return body;
         });
     });
@@ -83,24 +62,11 @@ function update(url, id, data) {
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(data)
     }).then(function (response) {
-        response.json().then(
-
-            // edited this in to find Couch error (Even though capital E error is a class from simple-errors on NPM)
-            body => {
-                if (body.error) {
-                    throw new Error(body.reason || body.error);
-                }
-                return body;
-            });
+        response.json().then(function (body) {
+            return body;
+        });
     });
 }
-//             console.log("Successfully updated database entry.")
-//         );
-//     }) .catch(function (reason) {
-//         console.log("Horrible error:" + reason);
-//         // Should exit or throw here
-//     });
-// }
 
 
 module.exports.get = get;
@@ -108,4 +74,6 @@ module.exports.post = post;
 module.exports.docDelete = docDelete;
 module.exports.update = update;
 
-require("make-runnable");
+
+// For CLI use (janky):
+// require("make-runnable");

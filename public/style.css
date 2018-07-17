@@ -111,6 +111,15 @@ ul.infolist {
     text-align: left;
 }
 
+ul.errorWarnings {
+    list-style-type: none;
+    background-color: #FFD2D2;
+    /* border: 1px solid red; */
+    border-radius: 5px;
+    padding: 1em;
+    margin: 1em;
+}
+
 .new-entry {
     margin: 1em 1em 2em 1em;
     padding: 1em;

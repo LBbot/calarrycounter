@@ -14,13 +14,8 @@
 
 <div class = "new-entry">
 
-    <select>
-        <% for (let foodNum = 0; foodNum < foodList.rows.length; foodNum+=1) { %>
-            <option value = "<%= foodList.rows[foodNum]["id"] %>"><%= foodList.rows[foodNum]["value"][0] %></option>
-        <% } %>
-    </select>
-
-<p>Amounts marked *0 denote an unlisted or unavailable number.</p>
+    <h2>Error</h2>
+        <p><%= errorInfo %></p>
 
 <%- include("footer") %>
 

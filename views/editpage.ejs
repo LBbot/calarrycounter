@@ -6,7 +6,7 @@
     <title>Calarry Counter - Edit</title>
 
 
-    <link type="text/css" href="/styles.css" rel="stylesheet">
+    <link type="text/css" href="/style.css" rel="stylesheet">
 </head>
 
 <body>
@@ -52,6 +52,15 @@
             <input type="submit" class="js-submit" value="Update food info"> <a href="/addpage">Cancel</a>
         </form>
     </div>
+
+    <% if (typeof errorList !== "undefined") { %>
+        <ul class = "errorWarnings">
+        <h3>Error(s) submitting form:</h3>
+        <% for (let i = 0; i < errorList.length; i += 1) { %>
+            <li>- <%= errorList[i] %></li>
+        <% } %>
+    </ul>
+    <% } %>
 
 <!-- For testing (hash symbol after % = EJS comment) -->
 <%# console.log(foodData); %>

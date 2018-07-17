@@ -7,18 +7,12 @@ const baseURL = "http://127.0.0.1:5984/";
 
 
 function validator(arrayOf10Fields) {
-    let error = "";
-    // Logs error and exits
-    function errorOutFunc() {
-        console.log(error);
-        process.exit();
-    }
+    // Empty error array to check later
+    const errorArray = [];
 
     // Argument amount check (must be 10)
     if (arrayOf10Fields.length < 10 || arrayOf10Fields.length > 10) {
-        error = "Too many or too few arguments supplied to function. Should be 10.";
-        console.log(arguments);
-        errorOutFunc();
+        errorArray.push("Too many or too few arguments supplied to function. Should be 10.");
     }
 
     // Name validation (MANDATORY FIELD)
@@ -26,20 +20,18 @@ function validator(arrayOf10Fields) {
         try {
             arrayOf10Fields[0] = String(arrayOf10Fields[0]);
         } catch (err) {
-            error = "Food name should be a string value." + err;
-            errorOutFunc();
+            errorArray.push("Food name should be a string value." + err);
         }
     }
     if (arrayOf10Fields[0].trim() === "") {
-        error = "Food name should not be blank.";
-        errorOutFunc();
+        errorArray.push("Food name should not be blank.");
     }
 
     // check numbers
     for (let argNumber = 1; argNumber < arrayOf10Fields.length; argNumber += 1) {
         // Check for floats and round them to two decimal places.
-        if (typeof arrayOf10Fields[argNumber] === "number" && arrayOf10Fields[argNumber] % 1 !== 0) {
-            arrayOf10Fields[argNumber] = parseFloat(arrayOf10Fields[argNumber].toFixed(2));
+        if (Number(arrayOf10Fields[argNumber]) % 1 !== 0) {
+            arrayOf10Fields[argNumber] = parseFloat(arrayOf10Fields[argNumber]).toFixed(2);
         }
 
         // Catch empties and note them
@@ -47,16 +39,25 @@ function validator(arrayOf10Fields) {
             arrayOf10Fields[argNumber] = "";
         // OR catch non-numbers
         } else if (isNaN(arrayOf10Fields[argNumber])) {
-            error = "Input #" + [argNumber] + " should be a number.";
-            errorOutFunc();
+            errorArray.push("Input #" + [argNumber + 1] + " should be a number.");
         // OR catch ints/floats outside of range (This should cover infinity)
         } else if (arrayOf10Fields[argNumber] < 0 || arrayOf10Fields[argNumber] > 9999) {
-            error = "Input #" + [argNumber] + " should be between 0 and 9999.";
-            errorOutFunc();
+            errorArray.push("Input #" + [argNumber + 1] + " should be between 0 and 9999.");
         }
     }
 
-    return arrayOf10Fields;
+    // If anything in errorArray: return it, otherwise return validated fields
+    if (errorArray.length > 0) {
+        console.log(errorArray);
+        return {
+            outcome: false,
+            content: errorArray
+        };
+    }
+    return {
+        outcome: true,
+        content: arrayOf10Fields
+    };
 }
 
 

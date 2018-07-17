@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Calarry Counter - Foods</title>
 
-    <link type="text/css" href="/styles.css" rel="stylesheet">
+    <link type="text/css" href="/style.css" rel="stylesheet">
 
 </head>
 
@@ -16,49 +16,96 @@
 <div class = "new-entry">
     <form action="/newpost" method = "post">
         <label for="name">Name:  </label>
-        <input type="text" id="name" name="name"><br>
+        <input type="text" id="name" name="name"
+            <% if (typeof errorList !== "undefined") { %>
+                value="<%= oldFormStuff[0] %>"
+            <% } %>
+        ><br>
 
         <label for="kcalPer100">Calories (kcal): </label>
-        <input type="text" id="kcalPer100" name="kcalPer100"><br>
+        <input type="text" id="kcalPer100" name="kcalPer100"
+            <% if (typeof errorList !== "undefined") { %>
+                value="<%= oldFormStuff[1] %>"
+            <% } %>
+        ><br>
 
         <label for="fatPer100">Fat (g): </label>
-        <input type="text" id="fatPer100" name="fatPer100"><br>
+        <input type="text" id="fatPer100" name="fatPer100"
+            <% if (typeof errorList !== "undefined") { %>
+                value="<%= oldFormStuff[2] %>"
+            <% } %>
+        ><br>
 
         <label for="saturatedFatPer100">Of which saturates (g): </label>
-        <input type="text" id="saturatedFatPer100" name="saturatedFatPer100"><br>
+        <input type="text" id="saturatedFatPer100" name="saturatedFatPer100"
+            <% if (typeof errorList !== "undefined") { %>
+                value="<%= oldFormStuff[3] %>"
+            <% } %>
+        ><br>
 
         <label for="carbohydratesPer100">Carbohydrates (g): </label>
-        <input type="text" id="carbohydratesPer100" name="carbohydratesPer100"><br>
+        <input type="text" id="carbohydratesPer100" name="carbohydratesPer100"
+            <% if (typeof errorList !== "undefined") { %>
+                value="<%= oldFormStuff[4] %>"
+            <% } %>
+        ><br>
 
         <label for="sugarsPer100">Sugar (g): </label>
-        <input type="text" id="sugarsPer100" name="sugarsPer100"><br>
+        <input type="text" id="sugarsPer100" name="sugarsPer100"
+            <% if (typeof errorList !== "undefined") { %>
+                value="<%= oldFormStuff[5] %>"
+            <% } %>
+        ><br>
 
         <label for="fibrePer100">Fibre (g): </label>
-        <input type="text" id="fibrePer100" name="fibrePer100"><br>
+        <input type="text" id="fibrePer100" name="fibrePer100"
+            <% if (typeof errorList !== "undefined") { %>
+                value="<%= oldFormStuff[6] %>"
+            <% } %>
+        ><br>
 
         <label for="proteinPer100">Protein (g): </label>
-        <input type="text" id="proteinPer100" name="proteinPer100"><br>
+        <input type="text" id="proteinPer100" name="proteinPer100"
+            <% if (typeof errorList !== "undefined") { %>
+                value="<%= oldFormStuff[7] %>"
+            <% } %>
+        ><br>
 
         <label for="saltPer100">Salt (g): </label>
-        <input type="text" id="saltPer100" name="saltPer100"><br>
+        <input type="text" id="saltPer100" name="saltPer100"
+            <% if (typeof errorList !== "undefined") { %>
+                value="<%= oldFormStuff[8] %>"
+            <% } %>
+        ><br>
 
         <label for="averageServing">Average serving: </label>
-        <input type="text" id="averageServing" name="averageServing"><br>
+        <input type="text" id="averageServing" name="averageServing"
+            <% if (typeof errorList !== "undefined") { %>
+                value="<%= oldFormStuff[9] %>"
+            <% } %>
+        ><br>
 
         <input type="submit" class="js-submit" value="Add new food">
     </form>
+
+    <% if (typeof errorList !== "undefined") { %>
+        <ul class = "errorWarnings">
+        <h3>Error(s) submitting form:</h3>
+        <% for (let i = 0; i < errorList.length; i += 1) { %>
+            <li>- <%= errorList[i] %></li>
+        <% } %>
+    </ul>
+    <% } %>
 
 
     <ul class = "infolist">
         <li>- Average serving may be in grams, mililitres or any other appropriate measurement.</li>
         <li>- Nutritional figures in grams/kcal are counted per 100 grams of the food item.</li>
+        <li>- Decimal figures are rounded down to two places. </li>
         <li>- If the information is unavailale, unlisted or not applicable - leave it blank.</li>
     </ul>
 
-
-
 <!-- For testing (hash symbol after % = EJS comment) -->
-<%# console.log("ejs call: "+ foodList); %>
 
 <!-- This div allows the table to have it's own horizontal scroll on smaller screens. -->
 <div class="tablecontainer">
@@ -88,11 +135,7 @@
             <% } %>
             <!-- Edit with food id attribute for Couch -->
             <td><a href="/editpage/<%=foodList.rows[foodNum]["id"]%>">Edit</a></td>
-            <td><form action="/deletepage/<%=foodList.rows[foodNum]["id"]%>" method = "post"><button class="deletebutton" onclick="return confirm('Are you sure?');">Delete</button></form></td>
-                <!-- <div class = "buttoncontainer">
-                    <a href="/editpage/<%=foodList.rows[foodNum]["id"]%>">Edit</a>
-                    <form action="/deletepage?id=<%=foodList.rows[foodNum]["id"]%>" method = "post"><button class="deletebutton">Delete</button></form>
-                </div> -->
+            <td><form action="/delete/<%=foodList.rows[foodNum]["id"]%>" method = "post"><button class="deletebutton" onclick="return confirm('Are you sure?');">Delete</button></form></td>
             </tr>
         <% } %>
     </table>
@@ -103,6 +146,5 @@
 <%- include("footer") %>
 
 </div>
-
 </body>
 </html>
