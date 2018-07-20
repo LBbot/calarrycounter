@@ -32,7 +32,7 @@ module.exports = function (app) {
 
 
     // Submitting with post
-    app.post("/newpost", urlencodedParser, function (req, res) {
+    app.post("/addpage", urlencodedParser, function (req, res) {
         // Get info from submitted form.
         const newArray = [
             req.body.name,
@@ -188,10 +188,14 @@ module.exports = function (app) {
 
     // Calculator page
     app.get("/calculator", function (req, res) {
-        const couchPath = "foods/_design/viewByName/_view/viewByNames";
-        couch.get(baseURL, couchPath).then(function (foodList) {
-            res.render("calculator", {
-                foodList: foodList
+        const foodsPath = "foods/_design/viewByName/_view/viewByNames";
+        const currentFoodPath = "currentfood/_design/viewz/_view/viewById";
+        couch.get(baseURL, foodsPath).then(function (foodList) {
+            couch.get(baseURL, currentFoodPath).then(function (currentFoodList) {
+                res.render("calculator", {
+                    foodList: foodList,
+                    currentFoodList: currentFoodList
+                });
             });
         }).catch(function (err) {
             // Check if it is a database connection issue
@@ -202,6 +206,49 @@ module.exports = function (app) {
                 });
             }
         });
+    });
+
+
+    // Calculator POST
+    app.post("/calculator", urlencodedParser, function (req, res) {
+        // Validate/sanitise the 3 items submitted by the form
+        const validatedOutput = jsonFuncs.calcValidator(req.body.foodID, req.body.type, req.body.amount);
+
+        // Check if validation returned true
+        if (validatedOutput.outcome) {
+            // Call the json prep and Couch add function on the validated array and redirect to calc page
+            jsonFuncs.addToCalc(validatedOutput.content).then(function () {
+                res.redirect("/calculator");
+            }).catch(function (err) {
+                // Check if it is a database connection issue
+                if (err.message.indexOf("ECONNREFUSED") > 0) {
+                    // Render error.ejs with custom error info so as not to reveal exact Couch details
+                    res.status(503).render("error", {
+                        errorInfo: "Error connecting to database. Please try again later."
+                    });
+                }
+            });
+        } else { // Validation outcome = false, so copy and paste this but with error stuff
+            const foodsPath = "foods/_design/viewByName/_view/viewByNames";
+            const currentFoodPath = "currentfood/_design/viewz/_view/viewById";
+            couch.get(baseURL, foodsPath).then(function (foodList) {
+                couch.get(baseURL, currentFoodPath).then(function (currentFoodList) {
+                    res.render("calculator", {
+                        foodList: foodList,
+                        currentFoodList: currentFoodList,
+                        errorList: validatedOutput.content
+                    });
+                });
+            }).catch(function (err) {
+                // Check if it is a database connection issue
+                if (err.message.indexOf("ECONNREFUSED") > 0) {
+                    // Render error.ejs with custom error info so as not to reveal exact Couch details
+                    res.status(503).render("error", {
+                        errorInfo: "Error connecting to database. Please try again later."
+                    });
+                }
+            });
+        }
     });
 
 

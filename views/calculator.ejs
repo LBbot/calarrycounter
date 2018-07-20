@@ -13,18 +13,99 @@
     <%- include("header") %>
 
 <div class = "new-entry">
+    <form action="/calculator" method = "post">
+        <select name="foodID" class = "foodSelect">
+            <% for (let foodNum = 0; foodNum < foodList.rows.length; foodNum+=1) { %>
+                <option value = "<%= foodList.rows[foodNum]["id"] %>"><%= foodList.rows[foodNum]["value"][0] %></option>
+            <% } %>
+        </select>
 
-    <select>
-        <% for (let foodNum = 0; foodNum < foodList.rows.length; foodNum+=1) { %>
-            <option value = "<%= foodList.rows[foodNum]["id"] %>"><%= foodList.rows[foodNum]["value"][0] %></option>
+        <select name="type" class = "typeSelect">
+            <!-- JS puts stuff here -->
+        </select>
+
+        <input type="text" id="amount" name="amount">
+
+        <input type="submit" class="js-submit" value="Add food">
+    </form>
+
+    <% if (typeof errorList !== "undefined") { %>
+        <ul class = "errorWarnings">
+        <h3>Error(s) submitting form:</h3>
+        <% for (let i = 0; i < errorList.length; i += 1) { %>
+            <li>- <%= errorList[i] %></li>
         <% } %>
-    </select>
+    </ul>
+    <% } %>
+
+
+<!-- This div allows the table to have it's own horizontal scroll on smaller screens. -->
+<div class="tablecontainer">
+    <table>
+        <tablehead>
+            <th>Name</th>
+            <th>Calories</th>
+            <th>Fat</th>
+            <th>Sat. fats</th>
+            <th>Carbs</th>
+            <th>Sugars</th>
+            <th>Fibre</th>
+            <th>Protein</th>
+            <th>Salt</th>
+            <th>Serving</th>
+        </tablehead>
+        <!-- Loop through the objects in DB -->
+        <% for (let foodCalcNum = 0; foodCalcNum < currentFoodList.rows.length; foodCalcNum += 1) { %>
+            <% for (let foodNum = 0; foodNum < foodList.rows.length; foodNum += 1) { %>
+                <% if (currentFoodList.rows[foodCalcNum]["value"][1] === foodList.rows[foodNum]["id"]) { %>
+                    <tr>
+                    <!-- Loop through array of names/info (the value of the object) to fill table-->
+                    <% for (let nutritionNum = 0; nutritionNum < 10; nutritionNum +=1 ) {
+                        if (foodList.rows[foodNum]["value"][nutritionNum] === "") { %>
+                            <td>*0</td>
+                        <% } else { %>
+                            <td><%=foodList.rows[foodNum]["value"][nutritionNum]%></td>
+                        <% } %>
+                    <% } %>
+                    <!-- Edit with food id attribute for Couch -->
+                    <td><a href="/editpage/<%=foodList.rows[foodNum]["id"]%>">Edit</a></td>
+                    <td><form action="/delete/<%=foodList.rows[foodNum]["id"]%>" method = "post"><button class="deletebutton" onclick="return confirm('Are you sure?');">Delete</button></form></td>
+                    </tr>
+                <% } %>
+            <% } %>
+        <% } %>
+    </table>
+</div>
 
 <p>Amounts marked *0 denote an unlisted or unavailable number.</p>
 
 <%- include("footer") %>
 
+<%# console.log(currentFoodList);%>
+
 </div>
+
+<script>
+    "use strict";
+    const listForClientSide = <%- JSON.stringify(foodList) %>;
+    const selection2 = document.querySelector(".typeSelect");
+    const selection1 = document.querySelector(".foodSelect");
+
+    function getAvgServ() {
+        console.log("function called " + selection1.selectedIndex);
+        if (listForClientSide.rows[selection1.selectedIndex]["value"][9] !== "") {
+            selection2.innerHTML = "<option value = 'grams'>grams/ml</option><option value = 'averageServing'>average serving (" + listForClientSide.rows[selection1.selectedIndex]["value"][9] + ")</option>";
+        } else {
+            selection2.innerHTML = "<option value = 'grams'>grams/ml</option>";
+        }
+    }
+    // onchange="getAvgServ(selection1.selectedIndex)"
+
+    getAvgServ();
+
+    selection1.addEventListener("change", getAvgServ);
+
+</script>
 
 </body>
 </html>

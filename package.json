@@ -2,7 +2,7 @@
   "name": "calarrycounter",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "app.js",
   "dependencies": {
     "body-parser": "^1.18.3",
     "ejs": "^2.6.1",
