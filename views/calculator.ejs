@@ -13,6 +13,62 @@
     <%- include("header") %>
 
 <div class = "new-entry">
+
+<!-- This div allows the table to have it's own horizontal scroll on smaller screens. -->
+<div class="tablecontainer ">
+<h2>Totals</h2>
+    <table class = "desktoptable">
+        <tablehead>
+            <th>Calories</th>
+            <th>Fat</th>
+            <th>Sat. fats</th>
+            <th>Carbs</th>
+            <th>Sugars</th>
+            <th>Fibre</th>
+            <th>Protein</th>
+            <th>Salt</th>
+        </tablehead>
+        <tr>
+            <%
+            function getTotals(macroNutrientNum) {
+                total = 0;
+
+                for (let foodCalcNum = 0; foodCalcNum < currentFoodList.rows.length; foodCalcNum += 1) {
+                    total += 100 * Number(currentFoodList.rows[foodCalcNum]["value"][macroNutrientNum]);
+                }
+
+                return total.toFixed(0) / 100;
+            }
+            %>
+            <td><%= getTotals(3) %></td>
+            <td><%= getTotals(4) %></td>
+            <td><%= getTotals(5) %></td>
+            <td><%= getTotals(6) %></td>
+            <td><%= getTotals(7) %></td>
+            <td><%= getTotals(8) %></td>
+            <td><%= getTotals(9) %></td>
+            <td><%= getTotals(10) %></td>
+        </tr>
+    </table>
+
+    <!-- This one is only visible when media query kicks in -->
+    <table class = "mobiletable">
+        <tr><th>Calories</th><td><%= getTotals(3) %></td></tr>
+        <tr><th>Fat</th><td><%= getTotals(4) %></td></tr>
+        <tr><th>Sat. fats</th><td><%= getTotals(5) %></td></tr>
+        <tr><th>Carbs</th><td><%= getTotals(6) %></td></tr>
+        <tr><th>Sugars</th><td><%= getTotals(7) %></td></tr>
+        <tr><th>Fibre</th><td><%= getTotals(8) %></td></tr>
+        <tr><th>Protein</th><td><%= getTotals(9) %></td></tr>
+        <tr><th>Salt</th><td><%= getTotals(10) %></td></tr>
+    </table>
+
+</div>
+
+<% if (getTotals(3) === 0) {%>
+<h3>Looks like there's nothing here. Why not try adding some food?</h3> <br />
+<% } %>
+
     <form action="/calculator" method = "post">
         <select name="foodID" class = "foodSelect">
             <% for (let foodNum = 0; foodNum < foodList.rows.length; foodNum+=1) { %>
@@ -39,11 +95,11 @@
     <% } %>
 
 
-<!-- This div allows the table to have it's own horizontal scroll on smaller screens. -->
-<div class="tablecontainer">
+<div class="tablecontainer ">
     <table>
         <tablehead>
             <th>Name</th>
+            <th>Amount</th>
             <th>Calories</th>
             <th>Fat</th>
             <th>Sat. fats</th>
@@ -52,32 +108,33 @@
             <th>Fibre</th>
             <th>Protein</th>
             <th>Salt</th>
-            <th>Serving</th>
         </tablehead>
         <!-- Loop through the objects in DB -->
         <% for (let foodCalcNum = 0; foodCalcNum < currentFoodList.rows.length; foodCalcNum += 1) { %>
-            <% for (let foodNum = 0; foodNum < foodList.rows.length; foodNum += 1) { %>
-                <% if (currentFoodList.rows[foodCalcNum]["value"][1] === foodList.rows[foodNum]["id"]) { %>
-                    <tr>
-                    <!-- Loop through array of names/info (the value of the object) to fill table-->
-                    <% for (let nutritionNum = 0; nutritionNum < 10; nutritionNum +=1 ) {
-                        if (foodList.rows[foodNum]["value"][nutritionNum] === "") { %>
-                            <td>*0</td>
-                        <% } else { %>
-                            <td><%=foodList.rows[foodNum]["value"][nutritionNum]%></td>
-                        <% } %>
+            <tr>
+                <!-- Harcoded first 3 values so we can use logic on amount type (e.g. grams) -->
+                <td><%=currentFoodList.rows[foodCalcNum]["value"][0]%></td>
+                <td>
+                    <a href = "/amountedit/<%=currentFoodList.rows[foodCalcNum]["id"]%>">
+                    <%=currentFoodList.rows[foodCalcNum]["value"][1]%>
+                    <% if (currentFoodList.rows[foodCalcNum]["value"][2] === "grams") {%>
+                        g
                     <% } %>
-                    <!-- Edit with food id attribute for Couch -->
-                    <td><a href="/editpage/<%=foodList.rows[foodNum]["id"]%>">Edit</a></td>
-                    <td><form action="/delete/<%=foodList.rows[foodNum]["id"]%>" method = "post"><button class="deletebutton" onclick="return confirm('Are you sure?');">Delete</button></form></td>
-                    </tr>
+                    </a>
+                </td>
+                <!-- Loop through array of info (the value of the object) to fill rest of table-->
+                <% for (let nutritionNum = 3; nutritionNum < currentFoodList.rows[foodCalcNum]["value"].length; nutritionNum +=1 ) { %>
+                    <td><%=currentFoodList.rows[foodCalcNum]["value"][nutritionNum]%></td>
                 <% } %>
-            <% } %>
+            <!-- Edit with food id attribute for Couch -->
+            <td><form action="/remove/<%=currentFoodList.rows[foodCalcNum]["id"]%>" method = "post"><button class="deletebutton" onclick="return confirm('Are you sure?');">Remove</button></form></td>
+            </tr>
         <% } %>
     </table>
 </div>
 
-<p>Amounts marked *0 denote an unlisted or unavailable number.</p>
+<!-- Pie chart here -->
+<canvas class = "myCanvas"></canvas>
 
 <%- include("footer") %>
 
@@ -86,24 +143,121 @@
 </div>
 
 <script>
+    // This section passes the foodlist from serverside to clientside JS so that when selecting a food,
+    // it can check for average serving options and fill them in for the second selection.
     "use strict";
     const listForClientSide = <%- JSON.stringify(foodList) %>;
     const selection2 = document.querySelector(".typeSelect");
     const selection1 = document.querySelector(".foodSelect");
 
     function getAvgServ() {
-        console.log("function called " + selection1.selectedIndex);
         if (listForClientSide.rows[selection1.selectedIndex]["value"][9] !== "") {
             selection2.innerHTML = "<option value = 'grams'>grams/ml</option><option value = 'averageServing'>average serving (" + listForClientSide.rows[selection1.selectedIndex]["value"][9] + ")</option>";
         } else {
             selection2.innerHTML = "<option value = 'grams'>grams/ml</option>";
         }
     }
-    // onchange="getAvgServ(selection1.selectedIndex)"
 
+    // to run on pageload
     getAvgServ();
 
     selection1.addEventListener("change", getAvgServ);
+
+
+    // Pie chart stuff
+    var myCanvas = document.querySelector(".myCanvas");
+      myCanvas.width = 300;
+      myCanvas.height = 300;
+
+      var ctx = myCanvas.getContext("2d");
+
+      function drawLine(ctx, startX, startY, endX, endY) {
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+      }
+
+      function drawArc(ctx, centerX, centerY, radius, startAngle, endAngle) {
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+        ctx.stroke();
+      }
+
+      function drawPieSlice(ctx, centerX, centerY, radius, startAngle, endAngle, color) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      var Piechart = function(options) {
+        this.options = options;
+        this.canvas = options.canvas;
+        this.ctx = this.canvas.getContext("2d");
+        this.colors = options.colors;
+
+        this.draw = function() {
+          var total_value = 0;
+          var color_index = 0;
+          for (var categ in this.options.data) {
+            var val = this.options.data[categ];
+            total_value += val;
+          }
+
+          var start_angle = 0;
+          for (categ in this.options.data) {
+            val = this.options.data[categ];
+            var slice_angle = 2 * Math.PI * val / total_value;
+
+            drawPieSlice(
+              this.ctx,
+              this.canvas.width/2,
+              this.canvas.height/2,
+              Math.min(this.canvas.width/2, this.canvas.height/2),
+              start_angle,
+              start_angle+slice_angle,
+              this.colors[color_index%this.colors.length]
+            );
+
+            start_angle += slice_angle;
+            color_index++;
+            }
+
+            start_angle = 0;
+            for (categ in this.options.data) {
+                val = this.options.data[categ];
+                slice_angle = 2 * Math.PI * val / total_value;
+                var pieRadius = Math.min(this.canvas.width/2, this.canvas.height/2);
+                var labelX = this.canvas.width/2 + (pieRadius / 2) * Math.cos(start_angle + slice_angle/2);
+                var labelY = this.canvas.height/2 + (pieRadius / 2) * Math.sin(start_angle + slice_angle/2);
+
+                var labelText = Math.round(100 * val / total_value);
+                this.ctx.fillStyle = "black";
+                this.ctx.font = "20px Courier";
+                this.ctx.fillText(labelText + "%", labelX, labelY);
+                start_angle += slice_angle;
+            }
+        }
+    }
+
+      var myPiechart = new Piechart(
+        {
+            canvas: myCanvas,
+            data:{
+                "fat": <%= getTotals(4) %>,
+                "carbs": <%= getTotals(6) %>,
+                "protein": <%= getTotals(9) %>
+            },
+            colors:["rgb(238, 238, 238)","#0375B4", "gray"]
+        }
+    );
+
+    myPiechart.draw();
+
+
 
 </script>
 

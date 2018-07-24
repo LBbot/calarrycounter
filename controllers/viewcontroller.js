@@ -51,7 +51,7 @@ module.exports = function (app) {
 
         // Check if validation returned true
         if (validatedOutput.outcome) {
-            // Call the json prep and Couch add function on the validated array in validatedArray and redirect to add page
+            // JSON prep and Couch add func on the validated array and redirect to add page
             jsonFuncs.addFood(validatedOutput.content).then(function () {
                 res.redirect("/addpage");
             }).catch(function (err) {
@@ -182,14 +182,13 @@ module.exports = function (app) {
                     });
                 }
             });
-
     });
 
 
     // Calculator page
     app.get("/calculator", function (req, res) {
         const foodsPath = "foods/_design/viewByName/_view/viewByNames";
-        const currentFoodPath = "currentfood/_design/viewz/_view/viewById";
+        const currentFoodPath = "currentfood/_design/viewz/_view/byDate";
         couch.get(baseURL, foodsPath).then(function (foodList) {
             couch.get(baseURL, currentFoodPath).then(function (currentFoodList) {
                 res.render("calculator", {
@@ -212,12 +211,63 @@ module.exports = function (app) {
     // Calculator POST
     app.post("/calculator", urlencodedParser, function (req, res) {
         // Validate/sanitise the 3 items submitted by the form
-        const validatedOutput = jsonFuncs.calcValidator(req.body.foodID, req.body.type, req.body.amount);
+        jsonFuncs.calcValidator(req.body.foodID, req.body.type, req.body.amount).then(function (validatedOutput) {
 
-        // Check if validation returned true
-        if (validatedOutput.outcome) {
-            // Call the json prep and Couch add function on the validated array and redirect to calc page
-            jsonFuncs.addToCalc(validatedOutput.content).then(function () {
+            // Check if validation returned true
+            if (validatedOutput.outcome) {
+
+                // Call the json prep and Couch add function on the validated array and redirect to calc page
+                jsonFuncs.addToCalc(validatedOutput.content).then(function () {
+                    res.redirect("/calculator");
+
+                // THIS BIT MIGHT BE REDUNDANT GIVEN OTHER CATCH
+                // }).catch(function (err) {
+                //     // Check if it is a database connection issue
+                //     if (err.message.indexOf("ECONNREFUSED") > 0) {
+                //         // Render error.ejs with custom error info so as not to reveal exact Couch details
+                //         res.status(503).render("error", {
+                //             errorInfo: "Error connecting to database. Please try again later."
+                //         });
+                //     }
+                });
+            } else { // Validation outcome = false, so copy and paste this but with error stuff
+                const foodsPath = "foods/_design/viewByName/_view/viewByNames";
+                const currentFoodPath = "currentfood/_design/viewz/_view/byDate";
+                couch.get(baseURL, foodsPath).then(function (foodList) {
+                    couch.get(baseURL, currentFoodPath).then(function (currentFoodList) {
+                        res.render("calculator", {
+                            foodList: foodList,
+                            currentFoodList: currentFoodList,
+                            errorList: validatedOutput.content
+                        });
+                    });
+                }).catch(function (err) {
+                    // Check if it is a database connection issue
+                    if (err.message.indexOf("ECONNREFUSED") > 0) {
+                        // Render error.ejs with custom error info so as not to reveal exact Couch details
+                        res.status(503).render("error", {
+                            errorInfo: "Error connecting to database. Please try again later."
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+    // Calculator Delete
+    // (total repeat of the Delete function except for the route and Couch path. No better way to do it?)
+    app.post("/remove/:id", function (req, res) {
+        // const id = req.query.id;
+        const id = req.params.id;
+        // Couch needs to get the REV ID from the full doc to delete it
+        couch.get(baseURL + "currentfood/" + id)
+            .then(function (foodItem) {
+                // Linter hates CouchDB's underscore. Non-issue.
+                const revID = foodItem._rev;
+                // ACTUAL DELETION:
+                return couch.docDelete(baseURL + "currentfood/", id, revID);
+            }).then(function () {
+                console.log("successfully deleted");
                 res.redirect("/calculator");
             }).catch(function (err) {
                 // Check if it is a database connection issue
@@ -228,27 +278,6 @@ module.exports = function (app) {
                     });
                 }
             });
-        } else { // Validation outcome = false, so copy and paste this but with error stuff
-            const foodsPath = "foods/_design/viewByName/_view/viewByNames";
-            const currentFoodPath = "currentfood/_design/viewz/_view/viewById";
-            couch.get(baseURL, foodsPath).then(function (foodList) {
-                couch.get(baseURL, currentFoodPath).then(function (currentFoodList) {
-                    res.render("calculator", {
-                        foodList: foodList,
-                        currentFoodList: currentFoodList,
-                        errorList: validatedOutput.content
-                    });
-                });
-            }).catch(function (err) {
-                // Check if it is a database connection issue
-                if (err.message.indexOf("ECONNREFUSED") > 0) {
-                    // Render error.ejs with custom error info so as not to reveal exact Couch details
-                    res.status(503).render("error", {
-                        errorInfo: "Error connecting to database. Please try again later."
-                    });
-                }
-            });
-        }
     });
 
 

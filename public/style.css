@@ -34,9 +34,8 @@ li.navli {
 .tablecontainer {
     overflow-x: auto;
     overflow-y: hidden;
-    /* border: 1px solid black;
-    border-radius: 10px;
-    margin: 0; */
+    padding-top: 1em;
+    padding-bottom: 1em;
 }
 
 table {
@@ -144,6 +143,10 @@ input {
     width:25%;
 }
 
+table.mobiletable {
+    display: none;
+}
+
 @media (max-width: 600px) {
 
     .new-entry {
@@ -155,12 +158,42 @@ input {
     }
 
     input {
-        width: 100%;
+        width: 90%;
         text-align: center;
+        margin: 1em;
+        padding: 1em;
+    }
+
+    select {
+        width: 90%;
+        margin: 1em;
     }
 
     label {
-        width: 100%;
+        width: 90%;
         text-align: center;
     }
+
+    table.desktoptable {
+        display: none;
+    }
+
+    table.mobiletable {
+        display: table;
+        width: 100%;
+    }
+
+    table.mobiletable th {
+        text-align: right;
+        width: 50%;
+        background-color: transparent;
+    }
+
+    table.mobiletable td {
+        text-align: left;
+        width: 50%;
+    }
+
+
+
 }

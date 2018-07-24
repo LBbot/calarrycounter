@@ -124,8 +124,7 @@ function calcValidator(formFoodID, formType, formAmount) {
         errorArray.push("Amount should be between 0 and 9999.");
     }
 
-
-    couch.get(baseURL, "foods/_design/viewByName/_view/viewByNames").then(function (foodList) {
+    return couch.get(baseURL, "foods/_design/viewByName/_view/viewByNames").then(function (foodList) {
         // Loops through foodList IDs to find a match with the one added to the calculator
         for (let foodNum = 0; foodNum < foodList.rows.length; foodNum += 1) {
             if (foodList.rows[foodNum].id === formFoodID) {
