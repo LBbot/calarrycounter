@@ -133,13 +133,20 @@
     </table>
 </div>
 
-<!-- Pie chart here -->
-<canvas class = "myCanvas"></canvas>
+<!-- Pie chart here (checks if any carbs, protein or fat with which to make chart)-->
+<% if (getTotals(4) + getTotals(6) + getTotals(9) > 0) { %>
+    <h2>Macronutrient split</h3>
+    <canvas class = "myCanvas"></canvas>
+
+    <!-- Key -->
+    <ul>
+        <li><span class="shape-circle shape-blue"></span> Carbohydrates</li>
+        <li><span class="shape-circle shape-lgray"></span> Fat</li>
+        <li><span class="shape-circle shape-dgray"></span> Protein</li>
+    </ul>
+ <% } %>
 
 <%- include("footer") %>
-
-<%# console.log(currentFoodList);%>
-
 </div>
 
 <script>
@@ -236,7 +243,7 @@
 
                 var labelText = Math.round(100 * val / total_value);
                 this.ctx.fillStyle = "black";
-                this.ctx.font = "20px Courier";
+                this.ctx.font = "20px sans-serif";
                 this.ctx.fillText(labelText + "%", labelX, labelY);
                 start_angle += slice_angle;
             }

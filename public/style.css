@@ -18,6 +18,25 @@ header {
     padding: 0.5em;
 }
 
+h1 a:link {
+    color: white;
+    text-decoration: none;
+}
+
+h1 a:visited {
+    color: white;
+    text-decoration: none;
+}
+
+h1 a:hover {
+    text-decoration: underline;
+    color: rgb(238, 238, 238);
+}
+
+h2 {
+    padding-bottom: 0.5em;
+}
+
 footer {
     margin-top: 2em;
 }
@@ -103,15 +122,17 @@ li a:hover {
     color: rgb(238, 238, 238);
 }
 
-ul.infolist {
+ul {
     list-style-type: none;
+}
+
+ul.infolist {
     margin: auto;
     padding: 1em;
     text-align: left;
 }
 
 ul.errorWarnings {
-    list-style-type: none;
     background-color: #FFD2D2;
     /* border: 1px solid red; */
     border-radius: 5px;
@@ -146,6 +167,28 @@ input {
 table.mobiletable {
     display: none;
 }
+
+.shape-circle {
+    display: inline-block;
+    vertical-align: middle;
+    width: 20px;
+    height: 20px;
+    -webkit-border-radius: 25%;
+       -moz-border-radius: 25%;
+            border-radius: 25%;
+  }
+
+  .shape-lgray {
+    background-color: rgb(238, 238, 238);
+  }
+
+  .shape-blue {
+    background-color: #0375B4;
+  }
+
+  .shape-dgray {
+    background-color: gray;
+  }
 
 @media (max-width: 600px) {
 
