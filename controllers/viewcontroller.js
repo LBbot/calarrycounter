@@ -2,6 +2,7 @@
 // Exporting all of this content as a function to be used by app.js
 module.exports = function (app) {
 
+
     // Bodyparser for JSONs
     const bodyParser = require("body-parser");
     const urlencodedParser = bodyParser.urlencoded({ extended: false });
@@ -9,7 +10,7 @@ module.exports = function (app) {
     const couch = require("../couchFunctions");
     const baseCouchURL = "http://127.0.0.1:5984/"; // TODO: CONFIG FILE THIS
     // Module for validating input, performing calculations, writing JSONs and calling CouchDB requests
-    const jsonFunctions = require("../jsonFunctions");
+    const userInputFunctions = require("../userInputFunctions");
 
 
     /*
@@ -33,6 +34,7 @@ module.exports = function (app) {
         });
     });
 
+
     /*
     Add a new food to the list on food page (food.ejs)
     */
@@ -52,42 +54,30 @@ module.exports = function (app) {
         ];
 
         // Validate/sanitise that info
-
-
-
-        // WORKING FROM HERE, RENAMING VARIABLES
-
-
-
-        const validatedOutput = jsonFunctions.foodListValidation(formDataAsArray);
+        const validationOutput = userInputFunctions.foodListValidation(formDataAsArray);
 
         // Check if validation succeeded (this is a boolean property)
-        if (validatedOutput.success) {
-            // JSON prep and Couch add func on the validated array and send user back to food page
-            jsonFunctions.addFood(validatedOutput.content).then(function () {
+        if (validationOutput.success) {
+            // Func preps data into JSON and posts to Couch, then we send user back to food page
+            userInputFunctions.addToFoodList(validationOutput.content).then(function () {
                 res.redirect("/food");
             }).catch(function (err) {
-                // Check if it is a database connection issue
                 if (err.message.indexOf("ECONNREFUSED") > 0) {
-                    // Render error.ejs with custom error info so as not to reveal exact Couch details
                     res.status(503).render("error", {
                         errorInfo: "Error connecting to database. Please try again later."
                     });
                 }
             });
-        } else { // Validation success = false, so copy and paste this but with error stuff
+        } else { // if validation success = false: re-render food.ejs showing errors and the input that caused them
             const couchPath = "foods/_design/viewByName/_view/viewByNames";
             couch.get(baseCouchURL, couchPath).then(function (foodList) {
                 res.render("food", {
-                    // PASSING IN ERROR LIST AND FORM STUFF
                     foodList: foodList,
-                    errorList: validatedOutput.content,
-                    oldFormStuff: formDataAsArray
+                    errorList: validationOutput.content,
+                    previousUserInput: formDataAsArray
                 });
-            }).catch(function (err) {
-                // Check if it is a database connection issue
+            }).catch(function (err) { // Database errors
                 if (err.message.indexOf("ECONNREFUSED") > 0) {
-                    // Render error.ejs with custom error info so as not to reveal exact Couch details
                     res.status(503).render("error", {
                         errorInfo: "Error connecting to database. Please try again later."
                     });
@@ -97,18 +87,19 @@ module.exports = function (app) {
     });
 
 
-    // Editpage get, sends info to edit form
-    app.get("/editpage/:id", function (req, res) {
+    /*
+    Edit food list item:
+    GET single CouchDB doc from id in URL to pre-fill an ediatable form in edit-food-item.ejs
+    */
+    app.get("/edit-food-item/:id", function (req, res) {
         const id = req.params.id;
         const couchPath = "foods/" + id;
-        couch.get(baseCouchURL, couchPath).then(function (foodData) {
-            res.render("editpage", {
-                foodData: foodData
+        couch.get(baseCouchURL, couchPath).then(function (foodListItem) {
+            res.render("edit-food-item", {
+                foodListItem: foodListItem
             });
-        }).catch(function (err) {
-            // Check if it is a database connection issue
+        }).catch(function (err) { // Database errors
             if (err.message.indexOf("ECONNREFUSED") > 0) {
-                // Render error.ejs with custom error info so as not to reveal exact Couch details
                 res.status(503).render("error", {
                     errorInfo: "Error connecting to database. Please try again later."
                 });
@@ -117,12 +108,14 @@ module.exports = function (app) {
     });
 
 
-    // Edit action
-    app.post("/editconfirm", urlencodedParser, function (req, res) {
+    /*
+    Edit confirmation: Actually make the edit on the food list item (activated on submit)
+    */
+    app.post("/edit-food-item-confirmation/:id", urlencodedParser, function (req, res) {
         // Get id from URL
-        const id = req.query.id;
+        const id = req.params.id;
 
-        // Get info from submitted form.
+        // Get info from each field of the submitted form.
         const formDataAsArray = [
             req.body.name,
             req.body.kcalPer100,
@@ -135,33 +128,30 @@ module.exports = function (app) {
             req.body.saltPer100,
             req.body.averageServing
         ];
-        // Validate that info
-        const validatedOutput = jsonFunctions.foodListValidation(formDataAsArray);
+        // Validate/sanitise that info
+        const validationOutput = userInputFunctions.foodListValidation(formDataAsArray);
 
-        // Check if validation returned true
-        if (validatedOutput.success) {
-            // Get the JSON to edit it
+        if (validationOutput.success) {
+            // Get the original JSON so we can edit it
             couch.get(baseCouchURL, "foods/" + id)
-                .then(function (returnedJSON) {
-                    // Actually call the function to update and PUT.
-                    return jsonFunctions.editFood(validatedOutput.content, returnedJSON);
+                .then(function (originalJSON) {
+                    // Update the JSON properties with array of new content and send it back to CouchDB
+                    return userInputFunctions.editJSONAndPutBack(validationOutput.content, originalJSON);
                 })
                 .then(function () {
-                    console.log("successfully edited");
+                    // Send user back to food list page
                     res.redirect("/food");
                 });
-        } else { // Validation success = false, so copy and paste this but with error stuff
+        } else { // if validation success = false, re-render form with errors and the inputs that caused them
             const couchPath = "foods/" + id;
-            couch.get(baseCouchURL, couchPath).then(function (foodData) {
-                res.render("editpage", {
-                    foodData: foodData,
-                    errorList: validatedOutput.content,
-                    oldFormStuff: formDataAsArray
+            couch.get(baseCouchURL, couchPath).then(function (foodListItem) {
+                res.render("edit-food-item", {
+                    foodListItem: foodListItem,
+                    errorList: validationOutput.content,
+                    previousUserInput: formDataAsArray
                 });
-            }).catch(function (err) {
-                // Check if it is a database connection issue
+            }).catch(function (err) { // Database errors
                 if (err.message.indexOf("ECONNREFUSED") > 0) {
-                    // Render error.ejs with custom error info so as not to reveal exact Couch details
                     res.status(503).render("error", {
                         errorInfo: "Error connecting to database. Please try again later."
                     });
@@ -171,24 +161,23 @@ module.exports = function (app) {
     });
 
 
-    // Delete
-    app.post("/delete/:id", function (req, res) {
-        // const id = req.query.id;
+    /*
+    Delete item from food list - no page render, just the operation as a POST (because a delete header doesn't work)
+    */
+    app.post("/delete-food-item/:id", function (req, res) {
+        // Couch needs to get the whole doc (via ID in URL) to get the REV ID to delete it
         const id = req.params.id;
-        // Couch needs to get the REV ID from the full doc to delete it
         couch.get(baseCouchURL + "foods/" + id)
             .then(function (foodItem) {
-                // Linter hates CouchDB's underscore. Non-issue.
+                // Get _rev property + linter doesn't like Couch underscores so make exception
+                /* eslint no-underscore-dangle: ["error", { "allow": ["_rev"] }]*/
                 const revID = foodItem._rev;
-                // ACTUAL DELETION:
                 return couch.docDelete(baseCouchURL + "foods/", id, revID);
             }).then(function () {
-                console.log("successfully deleted");
+                // Send user back to food list page.
                 res.redirect("/food");
-            }).catch(function (err) {
-                // Check if it is a database connection issue
+            }).catch(function (err) { // Database errors
                 if (err.message.indexOf("ECONNREFUSED") > 0) {
-                    // Render error.ejs with custom error info so as not to reveal exact Couch details
                     res.status(503).render("error", {
                         errorInfo: "Error connecting to database. Please try again later."
                     });
@@ -197,21 +186,21 @@ module.exports = function (app) {
     });
 
 
-    // Calculator page
+    /*
+    Calculator - gets main food list, and a list of foods added to the calculator in order to render calculator.ejs
+    */
     app.get("/calculator", function (req, res) {
-        const foodsPath = "foods/_design/viewByName/_view/viewByNames";
-        const currentFoodPath = "currentfood/_design/viewz/_view/byDate";
-        couch.get(baseCouchURL, foodsPath).then(function (foodList) {
-            couch.get(baseCouchURL, currentFoodPath).then(function (currentFoodList) {
+        const foodListCouchView = "foods/_design/viewByName/_view/viewByNames";
+        const calculatorListFoodCouchView = "currentfood/_design/viewz/_view/byDate";
+        couch.get(baseCouchURL, foodListCouchView).then(function (mainFoodList) {
+            couch.get(baseCouchURL, calculatorListFoodCouchView).then(function (calculatorFoodList) {
                 res.render("calculator", {
-                    foodList: foodList,
-                    currentFoodList: currentFoodList
+                    mainFoodList: mainFoodList,
+                    calculatorFoodList: calculatorFoodList
                 });
             });
-        }).catch(function (err) {
-            // Check if it is a database connection issue
+        }).catch(function (err) { // Database errors
             if (err.message.indexOf("ECONNREFUSED") > 0) {
-                // Render error.ejs with custom error info so as not to reveal exact Couch details
                 res.status(503).render("error", {
                     errorInfo: "Error connecting to database. Please try again later."
                 });
@@ -220,43 +209,36 @@ module.exports = function (app) {
     });
 
 
-    // Calculator POST
+    /*
+    Calculator post
+    Add a food from the main food list to the Calculator with an amount for it to calculate.
+    */
     app.post("/calculator", urlencodedParser, function (req, res) {
-        // Validate/sanitise the 3 items submitted by the form
-        jsonFunctions.calcValidator(req.body.foodID, req.body.type, req.body.amount).then(function (validatedOutput) {
-
-            // Check if validation returned true
-            if (validatedOutput.success) {
-
-                // Call the json prep and Couch add function on the validated array and redirect to calc page
-                jsonFunctions.addToCalc(validatedOutput.content).then(function () {
+        /* Validate/sanitise the 3 items submitted in the form, then cross-reference with the matching foodID in the
+        main food list to get nutritional values and multiply them based on the amount entered */
+        userInputFunctions.validateAndCalculateFromAmount(
+            req.body.foodID,
+            req.body.type,
+            req.body.amount
+        ).then(function (validationOutput) {
+            if (validationOutput.success) {
+                // Func preps data into JSON and posts to Couch, then we send user back to calculator.ejs
+                userInputFunctions.addToCalculatorList(validationOutput.content).then(function () {
                     res.redirect("/calculator");
-
-                // THIS BIT MIGHT BE REDUNDANT GIVEN OTHER CATCH
-                // }).catch(function (err) {
-                //     // Check if it is a database connection issue
-                //     if (err.message.indexOf("ECONNREFUSED") > 0) {
-                //         // Render error.ejs with custom error info so as not to reveal exact Couch details
-                //         res.status(503).render("error", {
-                //             errorInfo: "Error connecting to database. Please try again later."
-                //         });
-                //     }
                 });
-            } else { // Validation success = false, so copy and paste this but with error stuff
-                const foodsPath = "foods/_design/viewByName/_view/viewByNames";
-                const currentFoodPath = "currentfood/_design/viewz/_view/byDate";
-                couch.get(baseCouchURL, foodsPath).then(function (foodList) {
-                    couch.get(baseCouchURL, currentFoodPath).then(function (currentFoodList) {
+            } else { // if validation success = false, re-render form with errors and the inputs that caused them
+                const foodListCouchView = "foods/_design/viewByName/_view/viewByNames";
+                const calculatorListFoodCouchView = "currentfood/_design/viewz/_view/byDate";
+                couch.get(baseCouchURL, foodListCouchView).then(function (mainFoodList) {
+                    couch.get(baseCouchURL, calculatorListFoodCouchView).then(function (calculatorFoodList) {
                         res.render("calculator", {
-                            foodList: foodList,
-                            currentFoodList: currentFoodList,
-                            errorList: validatedOutput.content
+                            mainFoodList: mainFoodList,
+                            calculatorFoodList: calculatorFoodList,
+                            errorList: validationOutput.content
                         });
                     });
-                }).catch(function (err) {
-                    // Check if it is a database connection issue
+                }).catch(function (err) { // Database errors
                     if (err.message.indexOf("ECONNREFUSED") > 0) {
-                        // Render error.ejs with custom error info so as not to reveal exact Couch details
                         res.status(503).render("error", {
                             errorInfo: "Error connecting to database. Please try again later."
                         });
@@ -266,25 +248,23 @@ module.exports = function (app) {
         });
     });
 
-    // Calculator Delete
-    // (total repeat of the Delete function except for the route and Couch path. No better way to do it?)
-    app.post("/remove/:id", function (req, res) {
-        // const id = req.query.id;
+
+    /*
+    Calculator Delete -total repeat of the Delete function except for the route and Couch path
+    */
+    app.post("/remove-from-calculator/:id", function (req, res) {
+        // Couch needs to get the whole doc (via ID in URL) to get the REV ID to delete it
         const id = req.params.id;
-        // Couch needs to get the REV ID from the full doc to delete it
         couch.get(baseCouchURL + "currentfood/" + id)
             .then(function (foodItem) {
-                // Linter hates CouchDB's underscore. Non-issue.
+                // Get _rev property
                 const revID = foodItem._rev;
-                // ACTUAL DELETION:
                 return couch.docDelete(baseCouchURL + "currentfood/", id, revID);
             }).then(function () {
-                console.log("successfully deleted");
+                // Send user back to calculator page.
                 res.redirect("/calculator");
-            }).catch(function (err) {
-                // Check if it is a database connection issue
+            }).catch(function (err) { // Database errors
                 if (err.message.indexOf("ECONNREFUSED") > 0) {
-                    // Render error.ejs with custom error info so as not to reveal exact Couch details
                     res.status(503).render("error", {
                         errorInfo: "Error connecting to database. Please try again later."
                     });

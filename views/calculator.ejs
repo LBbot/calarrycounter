@@ -33,8 +33,8 @@
             function getTotals(macroNutrientNum) {
                 total = 0;
 
-                for (let foodCalcNum = 0; foodCalcNum < currentFoodList.rows.length; foodCalcNum += 1) {
-                    total += 100 * Number(currentFoodList.rows[foodCalcNum]["value"][macroNutrientNum]);
+                for (let foodCalcNum = 0; foodCalcNum < calculatorFoodList.rows.length; foodCalcNum += 1) {
+                    total += 100 * Number(calculatorFoodList.rows[foodCalcNum]["value"][macroNutrientNum]);
                 }
 
                 return total.toFixed(0) / 100;
@@ -69,10 +69,10 @@
 <h3>Looks like there's nothing here. Why not try adding some food?</h3> <br />
 <% } %>
 
-    <form action="/calculator" method = "post">
+    <form action="/calculator/<%=  %>" method = "post">
         <select name="foodID" class = "foodSelect">
-            <% for (let foodNum = 0; foodNum < foodList.rows.length; foodNum+=1) { %>
-                <option value = "<%= foodList.rows[foodNum]["id"] %>"><%= foodList.rows[foodNum]["value"][0] %></option>
+            <% for (let foodNum = 0; foodNum < mainFoodList.rows.length; foodNum+=1) { %>
+                <option value = "<%= mainFoodList.rows[foodNum]["id"] %>"><%= mainFoodList.rows[foodNum]["value"][0] %></option>
             <% } %>
         </select>
 
@@ -110,24 +110,24 @@
             <th>Salt</th>
         </tablehead>
         <!-- Loop through the objects in DB -->
-        <% for (let foodCalcNum = 0; foodCalcNum < currentFoodList.rows.length; foodCalcNum += 1) { %>
+        <% for (let foodCalcNum = 0; foodCalcNum < calculatorFoodList.rows.length; foodCalcNum += 1) { %>
             <tr>
                 <!-- Harcoded first 3 values so we can use logic on amount type (e.g. grams) -->
-                <td><%=currentFoodList.rows[foodCalcNum]["value"][0]%></td>
+                <td><%=calculatorFoodList.rows[foodCalcNum]["value"][0]%></td>
                 <td>
-                    <a href = "/amountedit/<%=currentFoodList.rows[foodCalcNum]["id"]%>">
-                    <%=currentFoodList.rows[foodCalcNum]["value"][1]%>
-                    <% if (currentFoodList.rows[foodCalcNum]["value"][2] === "grams") {%>
+                    <a href = "/amountedit/<%=calculatorFoodList.rows[foodCalcNum]["id"]%>">
+                    <%=calculatorFoodList.rows[foodCalcNum]["value"][1]%>
+                    <% if (calculatorFoodList.rows[foodCalcNum]["value"][2] === "grams") {%>
                         g
                     <% } %>
                     </a>
                 </td>
                 <!-- Loop through array of info (the value of the object) to fill rest of table-->
-                <% for (let nutritionNum = 3; nutritionNum < currentFoodList.rows[foodCalcNum]["value"].length; nutritionNum +=1 ) { %>
-                    <td><%=currentFoodList.rows[foodCalcNum]["value"][nutritionNum]%></td>
+                <% for (let nutritionNum = 3; nutritionNum < calculatorFoodList.rows[foodCalcNum]["value"].length; nutritionNum +=1 ) { %>
+                    <td><%=calculatorFoodList.rows[foodCalcNum]["value"][nutritionNum]%></td>
                 <% } %>
             <!-- Edit with food id attribute for Couch -->
-            <td><form action="/remove/<%=currentFoodList.rows[foodCalcNum]["id"]%>" method = "post"><button class="deletebutton" onclick="return confirm('Are you sure?');">Remove</button></form></td>
+            <td><form action="/remove-from-calculator/<%=calculatorFoodList.rows[foodCalcNum]["id"]%>" method = "post"><button class="deletebutton" onclick="return confirm('Are you sure?');">Remove</button></form></td>
             </tr>
         <% } %>
     </table>
@@ -150,10 +150,10 @@
 </div>
 
 <script>
-    // This section passes the foodlist from serverside to clientside JS so that when selecting a food,
+    // This section passes the mainFoodList from serverside to clientside JS so that when selecting a food,
     // it can check for average serving options and fill them in for the second selection.
     "use strict";
-    const listForClientSide = <%- JSON.stringify(foodList) %>;
+    const listForClientSide = <%- JSON.stringify(mainFoodList) %>;
     const selection2 = document.querySelector(".typeSelect");
     const selection1 = document.querySelector(".foodSelect");
 

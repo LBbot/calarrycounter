@@ -18,70 +18,70 @@
         <label for="name">Name:  </label>
         <input type="text" id="name" name="name"
             <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[0] %>"
+                value="<%= previousUserInput[0] %>"
             <% } %>
         ><br>
 
         <label for="kcalPer100">Calories (kcal): </label>
         <input type="text" id="kcalPer100" name="kcalPer100"
             <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[1] %>"
+                value="<%= previousUserInput[1] %>"
             <% } %>
         ><br>
 
         <label for="fatPer100">Fat (g): </label>
         <input type="text" id="fatPer100" name="fatPer100"
             <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[2] %>"
+                value="<%= previousUserInput[2] %>"
             <% } %>
         ><br>
 
         <label for="saturatedFatPer100">Of which saturates (g): </label>
         <input type="text" id="saturatedFatPer100" name="saturatedFatPer100"
             <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[3] %>"
+                value="<%= previousUserInput[3] %>"
             <% } %>
         ><br>
 
         <label for="carbohydratesPer100">Carbohydrates (g): </label>
         <input type="text" id="carbohydratesPer100" name="carbohydratesPer100"
             <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[4] %>"
+                value="<%= previousUserInput[4] %>"
             <% } %>
         ><br>
 
         <label for="sugarsPer100">Sugar (g): </label>
         <input type="text" id="sugarsPer100" name="sugarsPer100"
             <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[5] %>"
+                value="<%= previousUserInput[5] %>"
             <% } %>
         ><br>
 
         <label for="fibrePer100">Fibre (g): </label>
         <input type="text" id="fibrePer100" name="fibrePer100"
             <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[6] %>"
+                value="<%= previousUserInput[6] %>"
             <% } %>
         ><br>
 
         <label for="proteinPer100">Protein (g): </label>
         <input type="text" id="proteinPer100" name="proteinPer100"
             <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[7] %>"
+                value="<%= previousUserInput[7] %>"
             <% } %>
         ><br>
 
         <label for="saltPer100">Salt (g): </label>
         <input type="text" id="saltPer100" name="saltPer100"
             <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[8] %>"
+                value="<%= previousUserInput[8] %>"
             <% } %>
         ><br>
 
         <label for="averageServing">Average serving: </label>
         <input type="text" id="averageServing" name="averageServing"
             <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[9] %>"
+                value="<%= previousUserInput[9] %>"
             <% } %>
         ><br>
 
@@ -134,8 +134,8 @@
                 <% } %>
             <% } %>
             <!-- Edit with food id attribute for Couch -->
-            <td><a href="/editpage/<%=foodList.rows[foodNum]["id"]%>">Edit</a></td>
-            <td><form action="/delete/<%=foodList.rows[foodNum]["id"]%>" method = "post"><button class="deletebutton" onclick="return confirm('Are you sure?');">Delete</button></form></td>
+            <td><a href="/edit-food-item/<%=foodList.rows[foodNum]["id"]%>">Edit</a></td>
+            <td><form action="/delete-food-item/<%=foodList.rows[foodNum]["id"]%>" method = "post"><button class="deletebutton" onclick="return confirm('Are you sure?');">Delete</button></form></td>
             </tr>
         <% } %>
     </table>

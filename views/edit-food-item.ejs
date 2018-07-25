@@ -12,83 +12,83 @@
     <%- include("header") %>
 
     <div class = "new-entry">
-        <form action="/editconfirm?id=<%= foodData._id %>" method = "post">
+        <form action="/edit-food-item-confirmation/<%= foodListItem._id %>" method = "post">
             <label for="name">Name:  </label>
             <input type="text" id="name" name="name" <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[0] %>"
+                value="<%= previousUserInput[0] %>"
             <% } else { %>
-                value="<%= foodData.name %>"
+                value="<%= foodListItem.name %>"
             <% } %>
             "><br>
 
             <label for="kcalPer100">Calories (kcal)*: </label>
             <input type="text" id="kcalPer100" name="kcalPer100" <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[1] %>"
+                value="<%= previousUserInput[1] %>"
                 <% } else {%>
-                value="<%= foodData.kcalPer100 %>"
+                value="<%= foodListItem.kcalPer100 %>"
                 <% } %>"><br>
 
             <label for="fatPer100">Fat (g)*: </label>
             <input type="text" id="fatPer100" name="fatPer100" <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[2] %>"
+                value="<%= previousUserInput[2] %>"
                 <% } else {%>
-                value="<%= foodData.fatPer100 %>"
+                value="<%= foodListItem.fatPer100 %>"
                 <% } %>"><br>
 
             <label for="saturatedFatPer100">Of which saturates (g)*: </label>
             <input type="text" id="saturatedFatPer100" name="saturatedFatPer100" <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[3] %>"
+                value="<%= previousUserInput[3] %>"
                 <% } else {%>
-                value="<%= foodData.saturatedFatPer100 %>"
+                value="<%= foodListItem.saturatedFatPer100 %>"
                 <% } %>"><br>
 
             <label for="carbohydratesPer100">Carbohydrates (g)*: </label>
             <input type="text" id="carbohydratesPer100" name="carbohydratesPer100" <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[4] %>"
+                value="<%= previousUserInput[4] %>"
                 <% } else {%>
-                value="<%= foodData.carbohydratesPer100 %>"
+                value="<%= foodListItem.carbohydratesPer100 %>"
                 <% } %>"><br>
 
             <label for="sugarsPer100">Sugar (g)*: </label>
             <input type="text" id="sugarsPer100" name="sugarsPer100" <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[5] %>"
+                value="<%= previousUserInput[5] %>"
                 <% } else {%>
-                value="<%= foodData.sugarsPer100 %>"
+                value="<%= foodListItem.sugarsPer100 %>"
                 <% } %>"><br>
 
             <label for="fibrePer100">Fibre (g)*: </label>
             <input type="text" id="fibrePer100" name="fibrePer100" <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[6] %>"
+                value="<%= previousUserInput[6] %>"
                 <% } else {%>
-                value="<%= foodData.fibrePer100 %>"
+                value="<%= foodListItem.fibrePer100 %>"
                 <% } %>"><br>
 
             <label for="proteinPer100">Protein (g)*: </label>
             <input type="text" id="proteinPer100" name="proteinPer100" <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[7] %>"
+                value="<%= previousUserInput[7] %>"
                 <% } else {%>
-                value="<%= foodData.proteinPer100 %>"
+                value="<%= foodListItem.proteinPer100 %>"
                 <% } %>"><br>
 
             <label for="saltPer100">Salt (g)*: </label>
             <input type="text" id="saltPer100" name="saltPer100" <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[8] %>"
+                value="<%= previousUserInput[8] %>"
                 <% } else {%>
-                value="<%= foodData.saltPer100 %>"
+                value="<%= foodListItem.saltPer100 %>"
                 <% } %>"><br>
 
             <label for="averageServing">Average serving: </label>
             <input type="text" id="averageServing" name="averageServing" <% if (typeof errorList !== "undefined") { %>
-                value="<%= oldFormStuff[9] %>"
+                value="<%= previousUserInput[9] %>"
                 <% } else {%>
-                value="<%= foodData.averageServing %>"
+                value="<%= foodListItem.averageServing %>"
                 <% } %>"><br>
 
             <label for="createdAt">Date/time created: </label>
-            <input type="text" id="createdAt" name="createdAt" value="<%= foodData.createdAt %>" readonly disabled><br>
+            <input type="text" id="createdAt" name="createdAt" value="<%= foodListItem.createdAt %>" readonly disabled><br>
 
 
-            <input type="submit" class="js-submit" value="Update food info"> <a href="/addpage">Cancel</a>
+            <input type="submit" class="js-submit" value="Update food info"> <a href="/food">Cancel</a>
         </form>
     </div>
 
@@ -102,7 +102,7 @@
     <% } %>
 
 <!-- For testing (hash symbol after % = EJS comment) -->
-<%# console.log(foodData); %>
+<%# console.log(foodListItem); %>
 
 <%- include("footer") %>
 
