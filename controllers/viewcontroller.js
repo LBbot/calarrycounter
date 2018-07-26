@@ -59,7 +59,7 @@ module.exports = function (app) {
         // Check if validation succeeded (this is a boolean property)
         if (validationOutput.success) {
             // Func preps data into JSON and posts to Couch, then we send user back to food page
-            userInputFunctions.addToFoodList(validationOutput.content).then(function () {
+            userInputFunctions.writeJSONAndAddToFoodList(validationOutput.content).then(function () {
                 res.redirect("/food");
             }).catch(function (err) {
                 if (err.message.indexOf("ECONNREFUSED") > 0) {
@@ -223,7 +223,7 @@ module.exports = function (app) {
         ).then(function (validationOutput) {
             if (validationOutput.success) {
                 // Func preps data into JSON and posts to Couch, then we send user back to calculator.ejs
-                userInputFunctions.addToCalculatorList(validationOutput.content).then(function () {
+                userInputFunctions.writeJSONAndAddToCalculatorList(validationOutput.content).then(function () {
                     res.redirect("/calculator");
                 });
             } else { // if validation success = false, re-render form with errors and the inputs that caused them

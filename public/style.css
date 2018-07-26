@@ -4,7 +4,6 @@
 }
 
 body {
-    /* font-family: "Arial", serif; */
     font-family: -apple-system,BlinkMacSystemFont,\.SFNSText-Bold,Roboto,Segoe UI,Helvetica Neue,Lucida Grande,sans-serif;
     background-color: white;
     text-align: center;
@@ -13,7 +12,6 @@ body {
 header {
     background-color: #0375B4;
     color: white;
-    /* font-family: "Rubik", sans-serif; */
     text-align: center;
     padding: 0.5em;
 }
@@ -88,10 +86,6 @@ tr:nth-child(even) {
     background-color: rgb(238, 238, 238);
 }
 
-.buttoncontainer {
-    display: inline;
-}
-
 a:link {
     color: #0375B4;
     text-decoration: none;
@@ -134,17 +128,15 @@ ul.infolist {
 
 ul.errorWarnings {
     background-color: #FFD2D2;
-    /* border: 1px solid red; */
     border-radius: 5px;
     padding: 1em;
     margin: 1em;
 }
 
-.new-entry {
+.content {
     margin: 1em 1em 2em 1em;
     padding: 1em;
     background-color: white;
-    /* border-radius: 10px; */
     max-width: 800px;
     margin: 0 auto;
     font-size: small;
@@ -191,8 +183,7 @@ table.mobiletable {
   }
 
 @media (max-width: 600px) {
-
-    .new-entry {
+    .content {
         font-size: medium;
     }
 
@@ -236,7 +227,4 @@ table.mobiletable {
         text-align: left;
         width: 50%;
     }
-
-
-
 }

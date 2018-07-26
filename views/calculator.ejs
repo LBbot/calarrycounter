@@ -4,269 +4,262 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Calarry Counter - Calculator</title>
-
     <link type="text/css" href="/style.css" rel="stylesheet">
 </head>
-
 <body>
-    <!-- the dash after % means it won't escape any HTML characters -->
+    <!-- Import header.ejs (the dash after % means it won't escape any HTML characters) -->
     <%- include("header") %>
 
-<div class = "new-entry">
+    <div class = "content">
+        <!-- tablecontainer CSS allows the table to have it's own horizontal scroll on smaller screens. -->
+        <div class="tablecontainer ">
+            <h2>Totals</h2>
 
-<!-- This div allows the table to have it's own horizontal scroll on smaller screens. -->
-<div class="tablecontainer ">
-<h2>Totals</h2>
-    <table class = "desktoptable">
-        <tablehead>
-            <th>Calories</th>
-            <th>Fat</th>
-            <th>Sat. fats</th>
-            <th>Carbs</th>
-            <th>Sugars</th>
-            <th>Fibre</th>
-            <th>Protein</th>
-            <th>Salt</th>
-        </tablehead>
-        <tr>
-            <%
-            function getTotals(macroNutrientNum) {
-                total = 0;
+            <table class = "desktoptable">
+                <tablehead>
+                    <th>Calories</th>
+                    <th>Fat</th>
+                    <th>Sat. fats</th>
+                    <th>Carbs</th>
+                    <th>Sugars</th>
+                    <th>Fibre</th>
+                    <th>Protein</th>
+                    <th>Salt</th>
+                </tablehead>
+                <tr>
+                    <% function getTotals(macroNutrientIndex) {
+                        /*
+                        Loop through every food on the list and add the value of the nutrient type given in the parameter
+                        (as an index) to total. E.G. [3] passed in as a macroNutrientIndex argument to get "calories".
+                        We also multiply by 100 to avoid floating point errors, then divide by 100 at the end with toFixed
+                        for rounding.
+                        */
+                        total = 0;
 
-                for (let foodCalcNum = 0; foodCalcNum < calculatorFoodList.rows.length; foodCalcNum += 1) {
-                    total += 100 * Number(calculatorFoodList.rows[foodCalcNum]["value"][macroNutrientNum]);
+                        for (let foodCalcNum = 0; foodCalcNum < calculatorFoodList.rows.length; foodCalcNum += 1) {
+                            total += 100 * Number(calculatorFoodList.rows[foodCalcNum]["value"][macroNutrientIndex]);
+                        }
+
+                        // If total still = 0, this will return 0.
+                        return total.toFixed(0) / 100;
+                    } %>
+                    <td><%= getTotals(3) %></td>
+                    <td><%= getTotals(4) %></td>
+                    <td><%= getTotals(5) %></td>
+                    <td><%= getTotals(6) %></td>
+                    <td><%= getTotals(7) %></td>
+                    <td><%= getTotals(8) %></td>
+                    <td><%= getTotals(9) %></td>
+                    <td><%= getTotals(10) %></td>
+                </tr>
+            </table>
+
+            <!-- This one is only visible when media query kicks in for smaller displays -->
+            <table class = "mobiletable">
+                <tr><th>Calories</th><td><%= getTotals(3) %></td></tr>
+                <tr><th>Fat</th><td><%= getTotals(4) %></td></tr>
+                <tr><th>Sat. fats</th><td><%= getTotals(5) %></td></tr>
+                <tr><th>Carbs</th><td><%= getTotals(6) %></td></tr>
+                <tr><th>Sugars</th><td><%= getTotals(7) %></td></tr>
+                <tr><th>Fibre</th><td><%= getTotals(8) %></td></tr>
+                <tr><th>Protein</th><td><%= getTotals(9) %></td></tr>
+                <tr><th>Salt</th><td><%= getTotals(10) %></td></tr>
+            </table>
+        </div>
+
+        <!-- If there's no calories at all, there's no items in the food list so we show an empty message -->
+        <% if (getTotals(3) === 0) {%>
+            <h3>Looks like there's nothing here. Why not try adding some food?</h3> <br />
+        <% } %>
+
+        <form action="/calculator/<%=  %>" method = "post">
+            <select name="foodID" class = "foodSelect">
+                <!-- Loop through main food list to get names for selection -->
+                <% for (let foodNum = 0; foodNum < mainFoodList.rows.length; foodNum+=1) { %>
+                    <option value = "<%= mainFoodList.rows[foodNum]["id"] %>"><%= mainFoodList.rows[foodNum]["value"][0] %></option>
+                <% } %>
+            </select>
+
+            <select name="type" class = "typeSelect">
+                <!-- Clientside JS fills out the grams/ml vs average serving option -->
+            </select>
+
+            <input type="text" id="amount" name="amount">
+
+            <input type="submit" class="js-submit" value="Add food">
+        </form>
+
+        <% if (typeof errorList !== "undefined") { %>
+            <ul class = "errorWarnings">
+                <h3>Error(s) submitting form:</h3>
+                <% for (let i = 0; i < errorList.length; i += 1) { %>
+                    <li>- <%= errorList[i] %></li>
+                <% } %>
+            </ul>
+        <% } %>
+
+        <div class="tablecontainer">
+            <table>
+                <tablehead>
+                    <th>Name</th>
+                    <th>Amount</th>
+                    <th>Calories</th>
+                    <th>Fat</th>
+                    <th>Sat. fats</th>
+                    <th>Carbs</th>
+                    <th>Sugars</th>
+                    <th>Fibre</th>
+                    <th>Protein</th>
+                    <th>Salt</th>
+                </tablehead>
+                <!-- Loop through the different foods in the calculator list -->
+                <% for (let foodCalcNum = 0; foodCalcNum < calculatorFoodList.rows.length; foodCalcNum += 1) { %>
+                    <tr>
+                        <!-- Harcoded first 3 indexes so we can use logic on amount type (e.g. grams) -->
+                        <td>
+                            <%=calculatorFoodList.rows[foodCalcNum]["value"][0]%>
+                        </td>
+                        <td>
+                            <a href = "/amountedit/<%=calculatorFoodList.rows[foodCalcNum]["id"]%>">
+                                <%=calculatorFoodList.rows[foodCalcNum]["value"][1]%>
+                                <% if (calculatorFoodList.rows[foodCalcNum]["value"][2] === "grams") {%>
+                                    g
+                                <% } %>
+                            </a>
+                        </td>
+                        <!-- Loop through array of info (the value of the object) to fill rest of table-->
+                        <% for (let nutritionNum = 3; nutritionNum < calculatorFoodList.rows[foodCalcNum]["value"].length; nutritionNum +=1 ) { %>
+                            <td>
+                                <%=calculatorFoodList.rows[foodCalcNum]["value"][nutritionNum]%>
+                            </td>
+                        <% } %>
+                        <!-- Remove button is given the food item's ID as param in URL for Express to retrieve -->
+                        <td>
+                            <form action="/remove-from-calculator/<%=calculatorFoodList.rows[foodCalcNum]["id"]%>" method = "post"><button class="deletebutton" onclick="return confirm('Are you sure?');">Remove</button></form>
+                        </td>
+                    </tr>
+                <% } %>
+            </table>
+        </div>
+
+        <!-- Pie chart here (checks if any carbs, protein or fat total more than 0 so it can make chart)-->
+        <% if (getTotals(4) + getTotals(6) + getTotals(9) > 0) { %>
+            <h2>Macronutrient split</h3>
+            <canvas class = "myCanvas"></canvas>
+
+            <!-- Key -->
+            <ul>
+                <li><span class="shape-circle shape-blue"></span> Carbohydrates</li>
+                <li><span class="shape-circle shape-lgray"></span> Fat</li>
+                <li><span class="shape-circle shape-dgray"></span> Protein</li>
+            </ul>
+        <% } %>
+
+        <%- include("footer") %>
+    </div>
+
+    <script>
+        "use strict";
+        // This passes the mainFoodList from serverside to clientside JS so that when selecting a food,
+        // it can check for if there's an average serving option. (Must be inline to do this.)
+        const mainFoodListForClientSide = <%- JSON.stringify(mainFoodList) %>;
+
+        // Query select the two drop down boxes
+        const foodSelection = document.querySelector(".foodSelect");
+        const amountTypeSelection = document.querySelector(".typeSelect");
+
+        function getAvgServ() {
+            if (mainFoodListForClientSide.rows[foodSelection.selectedIndex]["value"][9] !== "") {
+                amountTypeSelection.innerHTML = "<option value = 'grams'>grams/ml</option><option value = 'averageServing'>average serving (" + listForClientSide.rows[foodSelection.selectedIndex]["value"][9] + ")</option>";
+            } else {
+                amountTypeSelection.innerHTML = "<option value = 'grams'>grams/ml</option>";
+            }
+        }
+        // run on pageload, then run whenever selection is changed
+        getAvgServ();
+        foodSelection.addEventListener("change", getAvgServ);
+
+
+        // Pie chart code
+        const myCanvas = document.querySelector(".myCanvas");
+        myCanvas.width = 300;
+        myCanvas.height = 300;
+
+        const ctx = myCanvas.getContext("2d");
+
+        function drawPieSlice(ctx, centerX, centerY, radius, startAngle, endAngle, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        const Piechart = function(options) {
+            this.options = options;
+            this.canvas = options.canvas;
+            this.ctx = this.canvas.getContext("2d");
+            this.colors = options.colors;
+
+            this.draw = function() {
+            let total_value = 0;
+            let color_index = 0;
+            for (let categ in this.options.data) {
+                const val = this.options.data[categ];
+                total_value += val;
+            }
+
+            let start_angle = 0;
+            for (let categ in this.options.data) {
+                const val = this.options.data[categ];
+                const slice_angle = 2 * Math.PI * val / total_value;
+
+                drawPieSlice(
+                    this.ctx,
+                    this.canvas.width/2,
+                    this.canvas.height/2,
+                    Math.min(this.canvas.width/2, this.canvas.height/2),
+                    start_angle,
+                    start_angle+slice_angle,
+                    this.colors[color_index%this.colors.length]
+                );
+
+                start_angle += slice_angle;
+                color_index++;
                 }
 
-                return total.toFixed(0) / 100;
-            }
-            %>
-            <td><%= getTotals(3) %></td>
-            <td><%= getTotals(4) %></td>
-            <td><%= getTotals(5) %></td>
-            <td><%= getTotals(6) %></td>
-            <td><%= getTotals(7) %></td>
-            <td><%= getTotals(8) %></td>
-            <td><%= getTotals(9) %></td>
-            <td><%= getTotals(10) %></td>
-        </tr>
-    </table>
+                start_angle = 0;
+                for (let categ in this.options.data) {
+                    const val = this.options.data[categ];
+                    const slice_angle = 2 * Math.PI * val / total_value;
+                    const pieRadius = Math.min(this.canvas.width/2, this.canvas.height/2);
+                    const labelX = this.canvas.width/2 + (pieRadius / 2) * Math.cos(start_angle + slice_angle/2);
+                    const labelY = this.canvas.height/2 + (pieRadius / 2) * Math.sin(start_angle + slice_angle/2);
 
-    <!-- This one is only visible when media query kicks in -->
-    <table class = "mobiletable">
-        <tr><th>Calories</th><td><%= getTotals(3) %></td></tr>
-        <tr><th>Fat</th><td><%= getTotals(4) %></td></tr>
-        <tr><th>Sat. fats</th><td><%= getTotals(5) %></td></tr>
-        <tr><th>Carbs</th><td><%= getTotals(6) %></td></tr>
-        <tr><th>Sugars</th><td><%= getTotals(7) %></td></tr>
-        <tr><th>Fibre</th><td><%= getTotals(8) %></td></tr>
-        <tr><th>Protein</th><td><%= getTotals(9) %></td></tr>
-        <tr><th>Salt</th><td><%= getTotals(10) %></td></tr>
-    </table>
-
-</div>
-
-<% if (getTotals(3) === 0) {%>
-<h3>Looks like there's nothing here. Why not try adding some food?</h3> <br />
-<% } %>
-
-    <form action="/calculator/<%=  %>" method = "post">
-        <select name="foodID" class = "foodSelect">
-            <% for (let foodNum = 0; foodNum < mainFoodList.rows.length; foodNum+=1) { %>
-                <option value = "<%= mainFoodList.rows[foodNum]["id"] %>"><%= mainFoodList.rows[foodNum]["value"][0] %></option>
-            <% } %>
-        </select>
-
-        <select name="type" class = "typeSelect">
-            <!-- JS puts stuff here -->
-        </select>
-
-        <input type="text" id="amount" name="amount">
-
-        <input type="submit" class="js-submit" value="Add food">
-    </form>
-
-    <% if (typeof errorList !== "undefined") { %>
-        <ul class = "errorWarnings">
-        <h3>Error(s) submitting form:</h3>
-        <% for (let i = 0; i < errorList.length; i += 1) { %>
-            <li>- <%= errorList[i] %></li>
-        <% } %>
-    </ul>
-    <% } %>
-
-
-<div class="tablecontainer ">
-    <table>
-        <tablehead>
-            <th>Name</th>
-            <th>Amount</th>
-            <th>Calories</th>
-            <th>Fat</th>
-            <th>Sat. fats</th>
-            <th>Carbs</th>
-            <th>Sugars</th>
-            <th>Fibre</th>
-            <th>Protein</th>
-            <th>Salt</th>
-        </tablehead>
-        <!-- Loop through the objects in DB -->
-        <% for (let foodCalcNum = 0; foodCalcNum < calculatorFoodList.rows.length; foodCalcNum += 1) { %>
-            <tr>
-                <!-- Harcoded first 3 values so we can use logic on amount type (e.g. grams) -->
-                <td><%=calculatorFoodList.rows[foodCalcNum]["value"][0]%></td>
-                <td>
-                    <a href = "/amountedit/<%=calculatorFoodList.rows[foodCalcNum]["id"]%>">
-                    <%=calculatorFoodList.rows[foodCalcNum]["value"][1]%>
-                    <% if (calculatorFoodList.rows[foodCalcNum]["value"][2] === "grams") {%>
-                        g
-                    <% } %>
-                    </a>
-                </td>
-                <!-- Loop through array of info (the value of the object) to fill rest of table-->
-                <% for (let nutritionNum = 3; nutritionNum < calculatorFoodList.rows[foodCalcNum]["value"].length; nutritionNum +=1 ) { %>
-                    <td><%=calculatorFoodList.rows[foodCalcNum]["value"][nutritionNum]%></td>
-                <% } %>
-            <!-- Edit with food id attribute for Couch -->
-            <td><form action="/remove-from-calculator/<%=calculatorFoodList.rows[foodCalcNum]["id"]%>" method = "post"><button class="deletebutton" onclick="return confirm('Are you sure?');">Remove</button></form></td>
-            </tr>
-        <% } %>
-    </table>
-</div>
-
-<!-- Pie chart here (checks if any carbs, protein or fat with which to make chart)-->
-<% if (getTotals(4) + getTotals(6) + getTotals(9) > 0) { %>
-    <h2>Macronutrient split</h3>
-    <canvas class = "myCanvas"></canvas>
-
-    <!-- Key -->
-    <ul>
-        <li><span class="shape-circle shape-blue"></span> Carbohydrates</li>
-        <li><span class="shape-circle shape-lgray"></span> Fat</li>
-        <li><span class="shape-circle shape-dgray"></span> Protein</li>
-    </ul>
- <% } %>
-
-<%- include("footer") %>
-</div>
-
-<script>
-    // This section passes the mainFoodList from serverside to clientside JS so that when selecting a food,
-    // it can check for average serving options and fill them in for the second selection.
-    "use strict";
-    const listForClientSide = <%- JSON.stringify(mainFoodList) %>;
-    const selection2 = document.querySelector(".typeSelect");
-    const selection1 = document.querySelector(".foodSelect");
-
-    function getAvgServ() {
-        if (listForClientSide.rows[selection1.selectedIndex]["value"][9] !== "") {
-            selection2.innerHTML = "<option value = 'grams'>grams/ml</option><option value = 'averageServing'>average serving (" + listForClientSide.rows[selection1.selectedIndex]["value"][9] + ")</option>";
-        } else {
-            selection2.innerHTML = "<option value = 'grams'>grams/ml</option>";
-        }
-    }
-
-    // to run on pageload
-    getAvgServ();
-
-    selection1.addEventListener("change", getAvgServ);
-
-
-    // Pie chart stuff
-    var myCanvas = document.querySelector(".myCanvas");
-      myCanvas.width = 300;
-      myCanvas.height = 300;
-
-      var ctx = myCanvas.getContext("2d");
-
-      function drawLine(ctx, startX, startY, endX, endY) {
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.lineTo(endX, endY);
-        ctx.stroke();
-      }
-
-      function drawArc(ctx, centerX, centerY, radius, startAngle, endAngle) {
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-        ctx.stroke();
-      }
-
-      function drawPieSlice(ctx, centerX, centerY, radius, startAngle, endAngle, color) {
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-        ctx.closePath();
-        ctx.fill();
-      }
-
-      var Piechart = function(options) {
-        this.options = options;
-        this.canvas = options.canvas;
-        this.ctx = this.canvas.getContext("2d");
-        this.colors = options.colors;
-
-        this.draw = function() {
-          var total_value = 0;
-          var color_index = 0;
-          for (var categ in this.options.data) {
-            var val = this.options.data[categ];
-            total_value += val;
-          }
-
-          var start_angle = 0;
-          for (categ in this.options.data) {
-            val = this.options.data[categ];
-            var slice_angle = 2 * Math.PI * val / total_value;
-
-            drawPieSlice(
-              this.ctx,
-              this.canvas.width/2,
-              this.canvas.height/2,
-              Math.min(this.canvas.width/2, this.canvas.height/2),
-              start_angle,
-              start_angle+slice_angle,
-              this.colors[color_index%this.colors.length]
-            );
-
-            start_angle += slice_angle;
-            color_index++;
-            }
-
-            start_angle = 0;
-            for (categ in this.options.data) {
-                val = this.options.data[categ];
-                slice_angle = 2 * Math.PI * val / total_value;
-                var pieRadius = Math.min(this.canvas.width/2, this.canvas.height/2);
-                var labelX = this.canvas.width/2 + (pieRadius / 2) * Math.cos(start_angle + slice_angle/2);
-                var labelY = this.canvas.height/2 + (pieRadius / 2) * Math.sin(start_angle + slice_angle/2);
-
-                var labelText = Math.round(100 * val / total_value);
-                this.ctx.fillStyle = "black";
-                this.ctx.font = "20px sans-serif";
-                this.ctx.fillText(labelText + "%", labelX, labelY);
-                start_angle += slice_angle;
+                    const labelText = Math.round(100 * val / total_value);
+                    this.ctx.fillStyle = "black";
+                    this.ctx.font = "20px sans-serif";
+                    this.ctx.fillText(labelText + "%", labelX, labelY);
+                    start_angle += slice_angle;
+                }
             }
         }
-    }
 
-      var myPiechart = new Piechart(
-        {
-            canvas: myCanvas,
-            data:{
-                "fat": <%= getTotals(4) %>,
-                "carbs": <%= getTotals(6) %>,
-                "protein": <%= getTotals(9) %>
-            },
-            colors:["rgb(238, 238, 238)","#0375B4", "gray"]
-        }
-    );
+        const myPiechart = new Piechart(
+            {
+                canvas: myCanvas,
+                data:{
+                    "fat": <%= getTotals(4) %>,
+                    "carbs": <%= getTotals(6) %>,
+                    "protein": <%= getTotals(9) %>
+                },
+                colors:["rgb(238, 238, 238)","#0375B4", "gray"]
+            }
+        );
 
-    myPiechart.draw();
-
-
-
-</script>
+        myPiechart.draw();
+    </script>
 
 </body>
 </html>

@@ -61,7 +61,7 @@ function foodListValidation(formDataArray) {
 }
 
 
-function addToFoodList(validatedArray) {
+function writeJSONAndAddToFoodList(validatedArray) {
     // Preps a JSON from the validated array, and posts to database
     const newJSON = {
         "name": validatedArray[0].trim(),
@@ -104,7 +104,7 @@ function editJSONAndPutBack(formDataArray, oldJSON) {
 }
 
 
-// validation for calculator list items + outputs actual calculations
+// validation for amount put into calculator + calculates calories and nutrients from amount, outputs them
 function validateAndCalculateFromAmount(formFoodID, formType, formAmount) {
     // Any errors in validation will be added to this. If it's not empty by the end, it will be returned
     const errorArray = [];
@@ -123,49 +123,37 @@ function validateAndCalculateFromAmount(formFoodID, formType, formAmount) {
         errorArray.push("Amount should be between 0 and 9999.");
     }
 
-    /* get main food list so we can loop through the IDs to match what is being added to the calculator and get the
-    nutrition figures so we
-
-    WHY AM I LOOPING THROUGH AND NOT PASSING AN ID
-
-
-
-
-    */
+    // Get nutritional values from main food list so we can calculate them by amount.
     const matchingFoodCouchPath = "foods/" + formFoodID;
     return couch.get(baseCouchURL, matchingFoodCouchPath).then(function (foodListItemObject) {
         // Put name in final array first
         arrayOfFoodCalculations.push(foodListItemObject.name);
 
-        // Get the values so you can loop through them with an index starting at 3 (skipping ID, rev and name)
-        const foodListValuesArray = foodListItemObject.values;
+        // Get the values so you can loop through them by index
+        const foodListValuesArray = Object.values(foodListItemObject);
 
-        // ACTUAL CALCULATION
-        // Times nutritional number by *100 to avoid floating point errors, turning grams to miligrams
-        // Times that by the amount input and divide by 10000
-        // (Basically divide by 100 to work out the miligrams PER amount, then / 100 again to go back to grams)
-        // Add each nutrition category to array sequentially and ensure it's a float rounded to two places.
-
-
-        // THIS IS ONLY RETURNING THE NAME? SUPER BROKEN RIGHT NOW:
-
+        // Start at 3 to skip id, rev and name, stop 1 place before the end to skip date
         for (let foodProperty = 3; foodProperty < foodListValuesArray.length - 1; foodProperty += 1) {
             const nutritionNum = foodListValuesArray[foodProperty];
+            /*
+            CALCULATION:
+            Times nutritional number by *100 to avoid floating point errors (basically turning grams to miligrams)
+            Times that by the amount and divide by 10000 (basically divide by 100 to work out the miligrams PER amount,
+            then divide by 100 again to go back to grams)
+            Add each nutrition category to array sequentially and ensure it's a float rounded to two places.
+            */
             arrayOfFoodCalculations.push(Number.parseFloat(nutritionNum * 100 * formAmount / 10000).toFixed(2));
         }
 
-        // Add the three inputs to the array last (so that 0-9 is consistent with uncalculated food entries)
+        // Add the three calculator page inputs to the array last
         arrayOfFoodCalculations.push(formFoodID, formType, formAmount);
-        console.log("THING: " + arrayOfFoodCalculations);
-
-    }).catch(function (err) {
+    }).catch(function (err) { // Database errors
         if (err.message.indexOf("ECONNREFUSED") > 0) {
             errorArray.push("Error connecting to database.");
         }
     }).then(function () {
         // If anything in errorArray: return it, otherwise return validated fields
         if (errorArray.length > 0) {
-            console.log(errorArray);
             return {
                 success: false,
                 content: errorArray
@@ -179,12 +167,8 @@ function validateAndCalculateFromAmount(formFoodID, formType, formAmount) {
 }
 
 
-// Preps and POSTs json to database
-function addToCalculatorList(calculatedArray) {
-
-    console.log("ADDTOCALC " + calculatedArray);
-
-    // Stick trimmed and checked values into a JSON
+function writeJSONAndAddToCalculatorList(calculatedArray) {
+    // Write values into a JSON, add date
     const newJSON = {
         "name": calculatedArray[0],
         "kcalPerAmount": calculatedArray[1],
@@ -202,16 +186,18 @@ function addToCalculatorList(calculatedArray) {
         "createdAt": new Date()
     };
 
+    // Post to CouchDB
     const couchPath = "currentfood/";
     const url = baseCouchURL + couchPath;
-    // Actual add request
     return couch.post(url, newJSON);
 }
 
 
+// main food list exports
 module.exports.foodListValidation = foodListValidation;
-module.exports.addToFoodList = addToFoodList;
+module.exports.writeJSONAndAddToFoodList = writeJSONAndAddToFoodList;
 module.exports.editJSONAndPutBack = editJSONAndPutBack;
 
+// calculator list exports
 module.exports.validateAndCalculateFromAmount = validateAndCalculateFromAmount;
-module.exports.addToCalculatorList = addToCalculatorList;
+module.exports.writeJSONAndAddToCalculatorList = writeJSONAndAddToCalculatorList;

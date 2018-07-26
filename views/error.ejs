@@ -4,22 +4,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Calarry Counter - Calculator</title>
-
     <link type="text/css" href="/style.css" rel="stylesheet">
 </head>
 
 <body>
-    <!-- the dash after % means it won't escape any HTML characters -->
     <%- include("header") %>
 
-<div class = "new-entry">
-
-    <h2>Error</h2>
+    <div class = "content">
+        <h2>Error</h2>
         <p><%= errorInfo %></p>
 
-<%- include("footer") %>
-
-</div>
+        <%- include("footer") %>
+    </div>
 
 </body>
 </html>
