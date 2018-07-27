@@ -193,6 +193,80 @@ function writeJSONAndAddToCalculatorList(calculatedArray) {
 }
 
 
+function amountValidationOnly(newAmount) {
+    // Any errors in validation will be added to this. If it's not empty by the end, it will be returned
+    const errorArray = [];
+
+    // Check for floats and round them to two decimal places.
+    if (Number(newAmount) % 1 !== 0) {
+        newAmount = parseFloat(newAmount).toFixed(2);
+    }
+
+    // Catch non-numbers
+    if (isNaN(newAmount) || newAmount.trim() === "") {
+        errorArray.push("Amount should be a number.");
+    // OR catch numbers outside of range (This should cover infinity)
+    } else if (newAmount < 1 || newAmount > 9999) {
+        errorArray.push("Amount should be between 0 and 9999.");
+    }
+
+    // Checking errors early because there's no point doing the rest if it fails validation.
+    if (errorArray.length > 0) {
+        return {
+            success: false,
+            content: errorArray
+        };
+    }
+    return {
+        success: true,
+        content: newAmount
+    };
+}
+
+
+function amountRecalculationAndPutJSON(calcListID, newAmount) {
+    const calcListCouchPath = "currentfood/" + calcListID;
+    return couch.get(baseCouchURL, calcListCouchPath).then(function (calcListItemObject) {
+        // Use foodID property to find the matching item in the main foodList to get original nutrients
+        const mainFoodListCouchPath = "foods/" + calcListItemObject.foodID;
+        return couch.get(baseCouchURL, mainFoodListCouchPath).then(function (foodListItemObject) {
+
+            // Get the values so you can loop through them by index
+            const foodListValuesArray = Object.values(foodListItemObject);
+            const arrayOfFoodCalculations = [];
+
+            // Start at 3 for kcal, stop at 11 for salt.
+            for (let foodProperty = 3; foodProperty < 11; foodProperty += 1) {
+                const nutritionNum = foodListValuesArray[foodProperty];
+                /*
+                CALCULATION:
+                Times nutritional number by *100 to avoid floating point errors (basically turning grams to miligrams)
+                Times that by the amount and divide by 10000 (basically divide by 100 to work out the miligrams PER
+                amount, then divide by 100 again to go back to grams)
+                Add each nutrition category to array sequentially and ensure it's a float rounded to two places.
+                */
+                arrayOfFoodCalculations.push(Number.parseFloat(nutritionNum * 100 * newAmount / 10000).toFixed(2));
+            }
+
+            calcListItemObject.amount = newAmount;
+            calcListItemObject.kcalPerAmount = arrayOfFoodCalculations[0];
+            calcListItemObject.fatPerAmount = arrayOfFoodCalculations[1];
+            calcListItemObject.saturatedFatPerAmount = arrayOfFoodCalculations[2];
+            calcListItemObject.carbohydratesPerAmount = arrayOfFoodCalculations[3];
+            calcListItemObject.sugarsPerAmount = arrayOfFoodCalculations[4];
+            calcListItemObject.fibrePerAmount = arrayOfFoodCalculations[5];
+            calcListItemObject.proteinPerAmount = arrayOfFoodCalculations[6];
+            calcListItemObject.saltPerAmount = arrayOfFoodCalculations[7];
+
+            const couchPutPath = "currentfood/";
+            const url = baseCouchURL + couchPutPath;
+            return couch.update(url, calcListItemObject._id, calcListItemObject);
+        });
+    });
+}
+
+
+
 // main food list exports
 module.exports.foodListValidation = foodListValidation;
 module.exports.writeJSONAndAddToFoodList = writeJSONAndAddToFoodList;
@@ -201,3 +275,5 @@ module.exports.editJSONAndPutBack = editJSONAndPutBack;
 // calculator list exports
 module.exports.validateAndCalculateFromAmount = validateAndCalculateFromAmount;
 module.exports.writeJSONAndAddToCalculatorList = writeJSONAndAddToCalculatorList;
+module.exports.amountValidationOnly = amountValidationOnly;
+module.exports.amountRecalculationAndPutJSON = amountRecalculationAndPutJSON;

@@ -72,7 +72,7 @@
             <h3>Looks like there's nothing here. Why not try adding some food?</h3> <br />
         <% } %>
 
-        <form action="/calculator/<%=  %>" method = "post">
+        <form action="/calculator" method = "post">
             <select name="foodID" class = "foodSelect">
                 <!-- Loop through main food list to get names for selection -->
                 <% for (let foodNum = 0; foodNum < mainFoodList.rows.length; foodNum+=1) { %>
@@ -84,7 +84,7 @@
                 <!-- Clientside JS fills out the grams/ml vs average serving option -->
             </select>
 
-            <input type="text" id="amount" name="amount">
+            <input type="text" id="amount" class=formamountbox name="amount" size=7>
 
             <input type="submit" class="js-submit" value="Add food">
         </form>
@@ -117,15 +117,24 @@
                     <tr>
                         <!-- Harcoded first 3 indexes so we can use logic on amount type (e.g. grams) -->
                         <td>
-                            <%=calculatorFoodList.rows[foodCalcNum]["value"][0]%>
+                            <%= calculatorFoodList.rows[foodCalcNum]["value"][0] %>
                         </td>
-                        <td>
-                            <a href = "/amountedit/<%=calculatorFoodList.rows[foodCalcNum]["id"]%>">
-                                <%=calculatorFoodList.rows[foodCalcNum]["value"][1]%>
+                        <td class="editAmountBox">
+                            <form action="/calculator/<%= calculatorFoodList.rows[foodCalcNum]["id"] %>" method = "post" class="edit-amount-form">
+                                <input
+                                    type="text"
+                                    class="editamountbox"
+                                    name="editamount"
+                                    size=7
+                                    data-id="<%= calculatorFoodList.rows[foodCalcNum]["id"] %>"
+                                    value="<%= calculatorFoodList.rows[foodCalcNum]["value"][1] %>"
+                                >
                                 <% if (calculatorFoodList.rows[foodCalcNum]["value"][2] === "grams") {%>
-                                    g
+                                    <br>grams
+                                <% } else if (calculatorFoodList.rows[foodCalcNum]["value"][2] === "averageServing") { %>
+                                    <br>serving(s)
                                 <% } %>
-                            </a>
+                            </form>
                         </td>
                         <!-- Loop through array of info (the value of the object) to fill rest of table-->
                         <% for (let nutritionNum = 3; nutritionNum < calculatorFoodList.rows[foodCalcNum]["value"].length; nutritionNum +=1 ) { %>
@@ -160,8 +169,10 @@
 
     <script>
         "use strict";
-        // This passes the mainFoodList from serverside to clientside JS so that when selecting a food,
-        // it can check for if there's an average serving option. (Must be inline to do this.)
+        /*
+        This passes the mainFoodList from serverside to clientside JS so that when selecting a food,
+        it can check for if there's an average serving option. (Must be inline to do this.)
+        */
         const mainFoodListForClientSide = <%- JSON.stringify(mainFoodList) %>;
 
         // Query select the two drop down boxes
@@ -170,7 +181,7 @@
 
         function getAvgServ() {
             if (mainFoodListForClientSide.rows[foodSelection.selectedIndex]["value"][9] !== "") {
-                amountTypeSelection.innerHTML = "<option value = 'grams'>grams/ml</option><option value = 'averageServing'>average serving (" + listForClientSide.rows[foodSelection.selectedIndex]["value"][9] + ")</option>";
+                amountTypeSelection.innerHTML = "<option value = 'grams'>grams/ml</option><option value = 'averageServing'>average serving (" + mainFoodListForClientSide.rows[foodSelection.selectedIndex]["value"][9] + ")</option>";
             } else {
                 amountTypeSelection.innerHTML = "<option value = 'grams'>grams/ml</option>";
             }
@@ -180,7 +191,25 @@
         foodSelection.addEventListener("change", getAvgServ);
 
 
-        // Pie chart code
+        /*
+        Grab id and edited amount to send to the correct route for Express
+        */
+        function editAmountRedirect() {
+            const editAmountFormElement = document.querySelector(".edit-amount-form");
+            editAmountFormElement.submit();
+
+            // window.location.href = "/edit-amount/" + id + "&" + amount;
+        }
+        // Put onchange event listeners on the input boxes in the calculator list
+        const amountEditBoxes = document.querySelectorAll(".editamountbox");
+        amountEditBoxes.forEach(function (box) {
+            box.addEventListener("change", editAmountRedirect)
+        });
+
+
+        /*
+        Pie chart code
+        */
         const myCanvas = document.querySelector(".myCanvas");
         myCanvas.width = 300;
         myCanvas.height = 300;

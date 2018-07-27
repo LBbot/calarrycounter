@@ -255,14 +255,59 @@ module.exports = function (app) {
     app.post("/remove-from-calculator/:id", function (req, res) {
         // Couch needs to get the whole doc (via ID in URL) to get the REV ID to delete it
         const id = req.params.id;
-        couch.get(baseCouchURL + "currentfood/" + id)
-            .then(function (foodItem) {
-                // Get _rev property
-                const revID = foodItem._rev;
-                return couch.docDelete(baseCouchURL + "currentfood/", id, revID);
-            }).then(function () {
-                // Send user back to calculator page.
-                res.redirect("/calculator");
+        couch.get(baseCouchURL + "currentfood/" + id).then(function (foodItem) {
+            // Get _rev property
+            const revID = foodItem._rev;
+            return couch.docDelete(baseCouchURL + "currentfood/", id, revID);
+        }).then(function () {
+            // Send user back to calculator page.
+            res.redirect("/calculator");
+        }).catch(function (err) { // Database errors
+            if (err.message.indexOf("ECONNREFUSED") > 0) {
+                res.status(503).render("error", {
+                    errorInfo: "Error connecting to database. Please try again later."
+                });
+            }
+        });
+    });
+
+    /*
+    Calculator Edit Amount on already added items
+    Has to get original figures and recalculate them on the backend to edit.
+    */
+    app.post("/calculator/:id", urlencodedParser, function (req, res) {
+        // Get ID from URL
+        const id = req.params.id;
+        // Get amount passed in by form submit
+        const amount = req.body.editamount;
+
+        // Validate/sanitise/round amount
+        const validatedAmount = userInputFunctions.amountValidationOnly(amount);
+
+        if (validatedAmount.success) {
+            /* GET the nutrients by main list ID, and recalculate from the new amount, PUT back in database, then send
+            user back to calculator page */
+            userInputFunctions.amountRecalculationAndPutJSON(id, validatedAmount.content)
+                .then(function () {
+                    res.redirect("/calculator");
+                }).catch(function (err) { // Database errors
+                    if (err.message.indexOf("ECONNREFUSED") > 0) {
+                        res.status(503).render("error", {
+                            errorInfo: "Error connecting to database. Please try again later."
+                        });
+                    }
+                });
+        } else { // if validation success = false, re-render calculator page with errors and the inputs that caused them
+            const foodListCouchView = "foods/_design/viewByName/_view/viewByNames";
+            const calculatorListFoodCouchView = "currentfood/_design/viewz/_view/byDate";
+            couch.get(baseCouchURL, foodListCouchView).then(function (mainFoodList) {
+                couch.get(baseCouchURL, calculatorListFoodCouchView).then(function (calculatorFoodList) {
+                    res.render("calculator", {
+                        mainFoodList: mainFoodList,
+                        calculatorFoodList: calculatorFoodList,
+                        errorList: validatedAmount.content
+                    });
+                });
             }).catch(function (err) { // Database errors
                 if (err.message.indexOf("ECONNREFUSED") > 0) {
                     res.status(503).render("error", {
@@ -270,7 +315,11 @@ module.exports = function (app) {
                     });
                 }
             });
+        }
     });
+
+
+
 
 
     // Catch 404 errors as the last of the app. possibilities.

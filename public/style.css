@@ -156,6 +156,20 @@ input {
     width:25%;
 }
 
+input.editamountbox {
+    width: auto;
+    text-align: center;
+}
+
+input.formamountbox {
+    width: auto;
+    text-align: center;
+}
+
+td.editAmountBox {
+    text-align: center;
+}
+
 table.mobiletable {
     display: none;
 }
