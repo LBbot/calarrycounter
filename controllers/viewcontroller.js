@@ -167,12 +167,22 @@ module.exports = function (app) {
     app.post("/delete-food-item/:id", function (req, res) {
         // Couch needs to get the whole doc (via ID in URL) to get the REV ID to delete it
         const id = req.params.id;
-        couch.get(baseCouchURL + "foods/" + id)
-            .then(function (foodItem) {
-                // Get _rev property + linter doesn't like Couch underscores so make exception
+        couch.get(baseCouchURL + "foods/" + id).then(function (foodItem) {
+            // We also need to get items on the calculator and loop through them so we can delete any matches
+            couch.get(baseCouchURL + "currentfood/_design/viewz/_view/viewById").then(function (calcList) {
+                calcList.rows.forEach(async function (calcEntry) {
+                    // If id is matched in calculator entries, delete them with their ID and rev_ID)
+                    if (id === calcEntry.value[1]) {
+                        const calcRevID = calcEntry.value[0];
+                        await couch.docDelete(baseCouchURL + "currentfood/", calcEntry.id, calcRevID);
+                    }
+                });
+
+                // To delete original we get _rev property (linter doesn't like Couch underscores so make exception)
                 /* eslint no-underscore-dangle: ["error", { "allow": ["_rev"] }]*/
                 const revID = foodItem._rev;
                 return couch.docDelete(baseCouchURL + "foods/", id, revID);
+
             }).then(function () {
                 // Send user back to food list page.
                 res.redirect("/food");
@@ -183,6 +193,7 @@ module.exports = function (app) {
                     });
                 }
             });
+        });
     });
 
 

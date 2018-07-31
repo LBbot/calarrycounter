@@ -131,17 +131,73 @@
                         <% } %>
                     <% } %>
                     <!-- Edit and delete will pass food id param in URLs for Express to use -->
-                    <td><a href="/edit-food-item/<%=foodList.rows[foodNum]["id"]%>">Edit</a></td>
-                    <td><form action="/delete-food-item/<%=foodList.rows[foodNum]["id"]%>" method = "post"><button class="deletebutton" onclick="return confirm('Are you sure?');">Delete</button></form></td>
+                    <td><a href="/edit-food-item/<%= foodList.rows[foodNum]["id"] %>">Edit</a></td>
+                    <td><button class="deletebutton" data-id ="<%= foodList.rows[foodNum]["id"] %>">Delete</button></td>
                 </tr>
             <% } %>
         </table>
-    </div>
+        </div>
+
+
+        <!-- Modal only appears on delete-->
+       <div class="myModal myModal--hidden">
+       <div class="modalContent">
+           <p>Are you sure you want to delete this item?</p>
+           <p class = "quote"></p>
+           <form method = "post"><button class="options ok">OK, delete</button></form>
+           <button class="options cancel">Cancel, don't delete</button>
+       </div>
+       </div>
+
 
     <p>Amounts marked *0 denote an unlisted or unavailable number.</p>
 
     <%- include("footer") %>
-
 </div>
+
+
+
+
+<script>
+function summonModal(evt) {
+    "use strict";
+    const deleteIcon = evt.target;
+    const number = deleteIcon.getAttribute("data-id");
+    // Prep the item to show in the modal, sanitise it
+    const quoteForList = document.querySelector(".quote");
+    const inputValue = evt.target.parentNode.parentNode.childNodes[3].textContent;
+    const textNodeInput = document.createTextNode(inputValue);
+    quoteForList.innerHTML = ""; // Resets the quote so it doesn't add to old ones.
+    quoteForList.appendChild(textNodeInput);
+
+    // Show modal
+    const backgroundModal = document.querySelector(".myModal");
+    const modalBox = document.querySelector(".modalContent");
+    backgroundModal.classList.remove("myModal--hidden");
+
+    const yesButton = document.querySelector(".ok");
+    const noButton = document.querySelector(".cancel");
+    yesButton.parentNode.action = "/delete-food-item/" + number;
+
+
+    function killModal (e) {
+        if (e.target === backgroundModal || e.target === noButton) {
+            console.log("am i hitting this");
+            backgroundModal.classList.add("myModal--hidden");
+            window.removeEventListener("click", killModal);
+            noButton.removeEventListener("click", killModal);
+        }
+    }
+    noButton.addEventListener("click", killModal);
+    window.addEventListener("click", killModal);
+}
+
+const deleteButtons = document.querySelectorAll(".deletebutton");
+deleteButtons.forEach(function (deleteButton) {
+    deleteButton.addEventListener("click", summonModal);
+});
+
+</script>
+
 </body>
 </html>

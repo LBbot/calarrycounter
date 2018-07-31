@@ -144,7 +144,7 @@
                         <% } %>
                         <!-- Remove button is given the food item's ID as param in URL for Express to retrieve -->
                         <td>
-                            <form action="/remove-from-calculator/<%=calculatorFoodList.rows[foodCalcNum]["id"]%>" method = "post"><button class="deletebutton" onclick="return confirm('Are you sure?');">Remove</button></form>
+                            <form action="/remove-from-calculator/<%=calculatorFoodList.rows[foodCalcNum]["id"]%>" method = "post"><button class="deletebutton">Remove</button></form>
                         </td>
                     </tr>
                 <% } %>
@@ -194,11 +194,8 @@
         /*
         Grab id and edited amount to send to the correct route for Express
         */
-        function editAmountRedirect() {
-            const editAmountFormElement = document.querySelector(".edit-amount-form");
-            editAmountFormElement.submit();
-
-            // window.location.href = "/edit-amount/" + id + "&" + amount;
+        function editAmountRedirect(evt) {
+            evt.target.parentNode.submit()
         }
         // Put onchange event listeners on the input boxes in the calculator list
         const amountEditBoxes = document.querySelectorAll(".editamountbox");
