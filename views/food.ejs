@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,6 +13,16 @@
     <%- include("header") %>
 
     <div class = "content">
+
+    <% if (typeof errorList !== "undefined") { %>
+        <ul class = "errorWarnings">
+            <h3>Error(s) submitting form:</h3>
+            <% for (let i = 0; i < errorList.length; i += 1) { %>
+                <li>- <%= errorList[i] %></li>
+            <% } %>
+        </ul>
+    <% } %>
+
         <form action="/food" method = "post">
             <label for="name">Name:  </label>
             <input type="text" id="name" name="name"
@@ -87,15 +97,6 @@
             <input type="submit" class="js-submit" value="Add new food">
         </form>
 
-        <% if (typeof errorList !== "undefined") { %>
-            <ul class = "errorWarnings">
-            <h3>Error(s) submitting form:</h3>
-            <% for (let i = 0; i < errorList.length; i += 1) { %>
-                <li>- <%= errorList[i] %></li>
-            <% } %>
-        </ul>
-        <% } %>
-
         <ul class = "infolist">
             <li>- Average serving may be in grams, mililitres or any other appropriate measurement.</li>
             <li>- Nutritional figures in grams/kcal are counted per 100 grams of the food item.</li>
@@ -131,7 +132,7 @@
                         <% } %>
                     <% } %>
                     <!-- Edit and delete will pass food id param in URLs for Express to use -->
-                    <td><a href="/edit-food-item/<%= foodList.rows[foodNum]["id"] %>">Edit</a></td>
+                    <td><a href="/edit-food-item/<%= foodList.rows[foodNum]["id"] %>" class="editbutton">Edit</a></td>
                     <td><button class="deletebutton" data-id ="<%= foodList.rows[foodNum]["id"] %>">Delete</button></td>
                 </tr>
             <% } %>
@@ -143,9 +144,10 @@
        <div class="myModal myModal--hidden">
        <div class="modalContent">
            <p>Are you sure you want to delete this item?</p>
+           <br>
            <p class = "quote"></p>
-           <form method = "post"><button class="options ok">OK, delete</button></form>
-           <button class="options cancel">Cancel, don't delete</button>
+           <form method = "post"><button class="ok js-submit">Delete</button></form>
+           <button class="cancel cancelbutton">Cancel</button>
        </div>
        </div>
 
@@ -182,7 +184,6 @@ function summonModal(evt) {
 
     function killModal (e) {
         if (e.target === backgroundModal || e.target === noButton) {
-            console.log("am i hitting this");
             backgroundModal.classList.add("myModal--hidden");
             window.removeEventListener("click", killModal);
             noButton.removeEventListener("click", killModal);

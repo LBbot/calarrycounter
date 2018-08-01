@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,10 +11,18 @@
     <%- include("header") %>
 
     <div class = "content">
+        <% if (typeof errorList !== "undefined") { %>
+            <ul class = "errorWarnings">
+                <h3>Error(s) submitting form:</h3>
+                <% for (let i = 0; i < errorList.length; i += 1) { %>
+                    <li>- <%= errorList[i] %></li>
+                <% } %>
+            </ul>
+        <% } %>
+
         <!-- tablecontainer CSS allows the table to have it's own horizontal scroll on smaller screens. -->
         <div class="tablecontainer ">
             <h2>Totals</h2>
-
             <table class = "desktoptable">
                 <tablehead>
                     <th>Calories</th>
@@ -84,19 +92,11 @@
                 <!-- Clientside JS fills out the grams/ml vs average serving option -->
             </select>
 
-            <input type="text" id="amount" class=formamountbox name="amount" size=7>
+            <input type="text" id="amount" class=formamountbox name="amount" size=7 placeholder="Amount">
 
             <input type="submit" class="js-submit" value="Add food">
         </form>
 
-        <% if (typeof errorList !== "undefined") { %>
-            <ul class = "errorWarnings">
-                <h3>Error(s) submitting form:</h3>
-                <% for (let i = 0; i < errorList.length; i += 1) { %>
-                    <li>- <%= errorList[i] %></li>
-                <% } %>
-            </ul>
-        <% } %>
 
         <div class="tablecontainer">
             <table>
@@ -154,6 +154,7 @@
         <!-- Pie chart here (checks if any carbs, protein or fat total more than 0 so it can make chart)-->
         <% if (getTotals(4) + getTotals(6) + getTotals(9) > 0) { %>
             <h2>Macronutrient split</h3>
+            <br>
             <canvas class = "myCanvas"></canvas>
 
             <!-- Key -->
@@ -280,7 +281,7 @@
                     "carbs": <%= getTotals(6) %>,
                     "protein": <%= getTotals(9) %>
                 },
-                colors:["rgb(238, 238, 238)","#0375B4", "gray"]
+                colors:["#bfd4df","#0375B4", "#62757f"]
             }
         );
 

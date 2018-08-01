@@ -9,6 +9,10 @@ body {
     text-align: center;
 }
 
+button {
+    font-size: 100%;
+}
+
 header {
     background-color: #0375B4;
     color: white;
@@ -31,10 +35,6 @@ h1 a:hover {
     color: rgb(238, 238, 238);
 }
 
-h2 {
-    padding-bottom: 0.5em;
-}
-
 footer {
     margin-top: 2em;
 }
@@ -51,7 +51,6 @@ li.navli {
 .tablecontainer {
     overflow-x: auto;
     overflow-y: hidden;
-    padding-top: 1em;
     padding-bottom: 1em;
 }
 
@@ -85,7 +84,7 @@ tr {
 tr:nth-child(even) {
     background-color: rgb(238, 238, 238);
 }
-
+/*
 a:link {
     color: #0375B4;
     text-decoration: none;
@@ -99,7 +98,7 @@ a:visited {
 a:hover {
     color: gray;
     text-decoration: underline;
-}
+} */
 
 li a:link {
     color: white;
@@ -130,7 +129,6 @@ ul.errorWarnings {
     background-color: #FFD2D2;
     border-radius: 5px;
     padding: 1em;
-    margin: 1em;
 }
 
 .content {
@@ -139,7 +137,6 @@ ul.errorWarnings {
     background-color: white;
     max-width: 800px;
     margin: 0 auto;
-    font-size: small;
 }
 
 label, input {
@@ -154,6 +151,10 @@ label {
 
 input {
     width:25%;
+    margin: 2px;
+    padding: 3px;
+    border: #0375B4 1px solid;
+
 }
 
 input.editamountbox {
@@ -166,12 +167,104 @@ input.formamountbox {
     text-align: center;
 }
 
+.js-submit {
+    background: #0375b4;
+    border: #0375B4 1px solid;
+    border-radius: 6px;
+    text-align: center;
+    color: white;
+    padding: 6px;
+    font-size: 100%;
+}
+
+.js-submit:hover {
+    color: #0375b4;
+    background: white;
+    cursor: pointer;
+}
+
+.js-submit:active {
+    color: #0375b4;
+    background: white;
+    cursor: pointer;
+}
+
+.deletebutton {
+    background: #FFD2D2;
+    border-radius: 5px;
+    padding: 5px;
+    border: #FFD2D2 1px solid;
+}
+
+.deletebutton:hover {
+    background: white;
+    cursor: pointer;
+}
+
+.deletebutton:active {
+    background: white;
+    cursor: pointer;
+}
+
+.editbutton {
+    background: #0375B4;
+    color: white;
+    border-radius: 5px;
+    padding: 5px;
+    border: #0375B4 1px solid;
+    text-decoration: none;
+    font-size: small;
+}
+
+.editbutton:hover {
+    background: white;
+    color: #0375B4;
+    cursor: pointer;
+}
+
+.editbutton:active {
+    background: white;
+    color: #0375B4;
+    cursor: pointer;
+}
+
+.cancelbutton {
+    color: white;
+    background: #62757f;
+    border: #62757f 1px solid;
+    text-decoration: none;
+    border-radius: 6px;
+    padding: 6px;
+    display: block;
+    width: 23%;
+}
+
+.cancelbutton:hover {
+    color: #0375B4;
+    background: white;
+    border: #0375B4 1px solid;
+    cursor: pointer;
+}
+
+.cancelbutton:active {
+    color: #0375B4;
+    background: white;
+    border: #0375B4 1px solid;
+    cursor: pointer;
+}
+
+
 td.editAmountBox {
     text-align: center;
 }
 
+table.desktoptable {
+    font-size: medium;
+}
+
 table.mobiletable {
     display: none;
+    font-size: medium;
 }
 
 .shape-circle {
@@ -179,13 +272,11 @@ table.mobiletable {
     vertical-align: middle;
     width: 20px;
     height: 20px;
-    -webkit-border-radius: 25%;
-       -moz-border-radius: 25%;
-            border-radius: 25%;
+    border-radius: 25%;
   }
 
 .shape-lgray {
-background-color: rgb(238, 238, 238);
+background-color: #bfd4df;
 }
 
 .shape-blue {
@@ -193,9 +284,15 @@ background-color: #0375B4;
 }
 
 .shape-dgray {
-background-color: gray;
+background-color: #62757f;
 }
 
+select {
+    margin: 2px;
+    padding: 3px;
+    border: #0375B4 1px solid;
+    /* font-size: large; */
+}
 
 /* The Modal (background) */
 .myModal {
@@ -228,25 +325,28 @@ background-color: gray;
     color: gray;
 }
 
+.ok {
+    width: 23%;
+    margin: 1em;
+}
+
 @media (max-width: 600px) {
-    .content {
-        font-size: medium;
-    }
-
-    label, input {
-        display: block;
-    }
-
     input {
         width: 90%;
         text-align: center;
-        margin: 1em;
-        padding: 1em;
+        margin-bottom: 5px;
     }
 
     select {
         width: 90%;
-        margin: 1em;
+        font-size: large;
+        margin-bottom: 1em;
+    }
+
+    input.formamountbox {
+        font-size: large;
+        margin-bottom: 1em;
+        width: 88%;
     }
 
     label {
@@ -256,6 +356,10 @@ background-color: gray;
 
     table.desktoptable {
         display: none;
+    }
+
+    .cancelbutton, .ok {
+        width: 87%;
     }
 
     table.mobiletable {

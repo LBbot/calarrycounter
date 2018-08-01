@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,7 +11,17 @@
 
     <%- include("header") %>
 
-    <div class = "new-entry">
+    <div class = "content">
+        <% if (typeof errorList !== "undefined") { %>
+            <ul class = "errorWarnings">
+            <h3>Error(s) submitting form:</h3>
+            <% for (let i = 0; i < errorList.length; i += 1) { %>
+                <li>- <%= errorList[i] %></li>
+            <% } %>
+        </ul>
+        <% } %>
+
+
         <form action="/edit-food-item-confirmation/<%= foodListItem._id %>" method = "post">
             <label for="name">Name:  </label>
             <input type="text" id="name" name="name" <% if (typeof errorList !== "undefined") { %>
@@ -87,22 +97,11 @@
             <label for="createdAt">Date/time created: </label>
             <input type="text" id="createdAt" name="createdAt" value="<%= foodListItem.createdAt %>" readonly disabled><br>
 
+            <input type="submit" class="js-submit" value="Update food info">
 
-            <input type="submit" class="js-submit" value="Update food info"> <a href="/food">Cancel</a>
+            <a href="/food" class="cancelbutton">Cancel</a>
         </form>
     </div>
-
-    <% if (typeof errorList !== "undefined") { %>
-        <ul class = "errorWarnings">
-        <h3>Error(s) submitting form:</h3>
-        <% for (let i = 0; i < errorList.length; i += 1) { %>
-            <li>- <%= errorList[i] %></li>
-        <% } %>
-    </ul>
-    <% } %>
-
-<!-- For testing (hash symbol after % = EJS comment) -->
-<%# console.log(foodListItem); %>
 
 <%- include("footer") %>
 
