@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Calarry Counter - Edit</title>
+    <title>Edit food - Calarry Counter</title>
     <link type="text/css" href="/style.css" rel="stylesheet">
 </head>
 
@@ -12,13 +12,16 @@
     <%- include("header") %>
 
     <div class = "content">
+
         <% if (typeof errorList !== "undefined") { %>
-            <ul class = "errorWarnings">
-            <h3>Error(s) submitting form:</h3>
-            <% for (let i = 0; i < errorList.length; i += 1) { %>
-                <li>- <%= errorList[i] %></li>
-            <% } %>
-        </ul>
+            <div class = "errorWarnings">
+                <h3>Error(s) submitting form:</h3>
+                <ul>
+                    <% for (let i = 0; i < errorList.length; i += 1) { %>
+                        <li>- <%= errorList[i] %></li>
+                    <% } %>
+                </ul>
+            </div>
         <% } %>
 
 

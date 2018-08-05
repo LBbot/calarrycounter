@@ -329,8 +329,27 @@ module.exports = function (app) {
         }
     });
 
+    app.get("/", function (req, res) {
+        res.render("index");
+    });
 
+    app.get("/login", function (req, res) {
+        res.render("login");
+    });
 
+    app.get("/register", function (req, res) {
+        res.render("register");
+    });
+
+    app.get("/logout", function (req, res) {
+        // Do something to log user out and send back to homepage I guess
+        res.redirect("/");
+    });
+
+    app.get("/account", function (req, res) {
+        // do something with user stuff here
+        res.send("nothing here yet");
+    });
 
 
     // Catch 404 errors as the last of the app. possibilities.

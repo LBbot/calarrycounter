@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Calarry Counter - Calculator</title>
+    <title>Calculator - Calarry Counter</title>
     <link type="text/css" href="/style.css" rel="stylesheet">
 </head>
 <body>
@@ -11,13 +11,16 @@
     <%- include("header") %>
 
     <div class = "content">
+
         <% if (typeof errorList !== "undefined") { %>
-            <ul class = "errorWarnings">
+            <div class = "errorWarnings">
                 <h3>Error(s) submitting form:</h3>
-                <% for (let i = 0; i < errorList.length; i += 1) { %>
-                    <li>- <%= errorList[i] %></li>
-                <% } %>
-            </ul>
+                <ul>
+                    <% for (let i = 0; i < errorList.length; i += 1) { %>
+                        <li>- <%= errorList[i] %></li>
+                    <% } %>
+                </ul>
+            </div>
         <% } %>
 
         <!-- tablecontainer CSS allows the table to have it's own horizontal scroll on smaller screens. -->

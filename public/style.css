@@ -36,7 +36,8 @@ h1 a:hover {
 }
 
 footer {
-    margin-top: 2em;
+    margin-top: 3em;
+    font-size: small;
 }
 
 ul.navul {
@@ -84,7 +85,7 @@ tr {
 tr:nth-child(even) {
     background-color: rgb(238, 238, 238);
 }
-/*
+
 a:link {
     color: #0375B4;
     text-decoration: none;
@@ -98,7 +99,11 @@ a:visited {
 a:hover {
     color: gray;
     text-decoration: underline;
-} */
+}
+
+p {
+    margin: 1em;
+}
 
 li a:link {
     color: white;
@@ -125,7 +130,7 @@ ul.infolist {
     text-align: left;
 }
 
-ul.errorWarnings {
+.errorWarnings {
     background-color: #FFD2D2;
     border-radius: 5px;
     padding: 1em;
@@ -206,7 +211,7 @@ input.formamountbox {
     cursor: pointer;
 }
 
-.editbutton {
+a.editbutton {
     background: #0375B4;
     color: white;
     border-radius: 5px;
@@ -227,6 +232,24 @@ input.formamountbox {
     color: #0375B4;
     cursor: pointer;
 }
+/*
+a:link {
+    color: #0375B4;
+    text-decoration: none;
+}
+
+a:visited {
+    color: #0375B4;
+    font-weight: bold;
+}
+
+a:hover {
+    color: gray;
+    text-decoration: underline;
+} */
+
+
+
 
 .cancelbutton {
     color: white;

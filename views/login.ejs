@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Log in - Calarry Counter</title>
+    <link type="text/css" href="/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Import header.ejs (the dash after % means it won't escape any HTML characters) -->
+    <%- include("header") %>
+
+    <div class = "content">
+
+        <% if (typeof errorList !== "undefined") { %>
+            <div class = "errorWarnings">
+                <h3>Error(s) submitting form:</h3>
+                <ul>
+                    <% for (let i = 0; i < errorList.length; i += 1) { %>
+                        <li>- <%= errorList[i] %></li>
+                    <% } %>
+                </ul>
+            </div>
+        <% } %>
+
+
+        <form action="/login" method = "post">
+            <label for="email">Email:  </label>
+            <input type="text" id="email" name="email"
+                <% if (typeof errorList !== "undefined") { %>
+                    value="<%= previousUserInput[0] %>"
+                <% } %>
+            ><br>
+
+            <label for="password">Password: </label>
+            <input type="text" id="password" name="password"
+                <% if (typeof errorList !== "undefined") { %>
+                    value="<%= previousUserInput[1] %>"
+                <% } %>
+            ><br>
+
+            <input type="submit" class="js-submit" value="Log in">
+        </form>
+
+        <p><a href = "#">Forgotten password?</a></p>
+
+        <p>No account? <a href = "/register">Register here.</a></p>
+
+        <%- include("footer") %>
+    </div>
+
+</body>
+</html>

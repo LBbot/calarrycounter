@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Calarry Counter</title>
+    <link type="text/css" href="/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Import header.ejs (the dash after % means it won't escape any HTML characters) -->
+    <%- include("header") %>
+
+    <div class = "content">
+
+        <p>Calarry Counter is a simple, lightweight web app for counting calories and nutrients. </p>
+
+        <p>Add foods and their nutritional values into the app, then put the amounts you've eaten into the calculator
+        to see your caloric and nutritional totals.</p>
+
+        <p>Kept simple with a single calculator to add and remove from, for day-to-day use instead of managing calendars! </p>
+
+        <p>New? <a href = "/register">Register here.</a></p>
+        <p>Already registered? <a href = "/login">Log in here.</a></p>
+
+        <%- include("footer") %>
+    </div>
+
+</body>
+</html>
