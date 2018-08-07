@@ -1,7 +1,7 @@
 "use strict";
 // Couch functions for CRUD operations
 const couch = require("./couchFunctions.js");
-const baseCouchURL = "http://127.0.0.1:5984/"; // TODO: this SHOULD BE IN A CONFIG FILE
+const config = require("./config.json");
 
 
 function foodListValidation(formDataArray) {
@@ -81,7 +81,7 @@ function writeJSONAndAddToFoodList(validatedArray) {
     };
 
     const couchPath = "foods/";
-    const url = baseCouchURL + couchPath;
+    const url = config.baseCouchURL + couchPath;
     return couch.post(url, newJSON);
 }
 
@@ -100,7 +100,7 @@ function editJSONAndPutBack(formDataArray, oldJSON) {
     oldJSON.averageServing = formDataArray[9];
 
     const couchPath = "foods/";
-    const url = baseCouchURL + couchPath;
+    const url = config.baseCouchURL + couchPath;
     // Linter doesn't like Couch underscores so make exception
     /* eslint no-underscore-dangle: ["error", { "allow": ["_id"] }]*/
     return couch.update(url, oldJSON._id, oldJSON);
@@ -128,7 +128,7 @@ function validateAndCalculateFromAmount(formFoodID, formType, formAmount) {
 
     // Get nutritional values from main food list so we can calculate them by amount.
     const matchingFoodCouchPath = "foods/" + formFoodID;
-    return couch.get(baseCouchURL, matchingFoodCouchPath).then(function (foodListItemObject) {
+    return couch.get(config.baseCouchURL, matchingFoodCouchPath).then(function (foodListItemObject) {
         // Put name in final array first
         arrayOfFoodCalculations.push(foodListItemObject.name);
 
@@ -191,7 +191,7 @@ function writeJSONAndAddToCalculatorList(calculatedArray) {
 
     // Post to CouchDB
     const couchPath = "currentfood/";
-    const url = baseCouchURL + couchPath;
+    const url = config.baseCouchURL + couchPath;
     return couch.post(url, newJSON);
 }
 
@@ -229,10 +229,10 @@ function amountValidationOnly(newAmount) {
 
 function amountRecalculationAndPutJSON(calcListID, newAmount) {
     const calcListCouchPath = "currentfood/" + calcListID;
-    return couch.get(baseCouchURL, calcListCouchPath).then(function (calcListItemObject) {
+    return couch.get(config.baseCouchURL, calcListCouchPath).then(function (calcListItemObject) {
         // Use foodID property to find the matching item in the main foodList to get original nutrients
         const mainFoodListCouchPath = "foods/" + calcListItemObject.foodID;
-        return couch.get(baseCouchURL, mainFoodListCouchPath).then(function (foodListItemObject) {
+        return couch.get(config.baseCouchURL, mainFoodListCouchPath).then(function (foodListItemObject) {
 
             // Get the values so you can loop through them by index
             const foodListValuesArray = Object.values(foodListItemObject);
@@ -262,7 +262,7 @@ function amountRecalculationAndPutJSON(calcListID, newAmount) {
             calcListItemObject.saltPerAmount = arrayOfFoodCalculations[7];
 
             const couchPutPath = "currentfood/";
-            const url = baseCouchURL + couchPutPath;
+            const url = config.baseCouchURL + couchPutPath;
             return couch.update(url, calcListItemObject._id, calcListItemObject);
         });
     });

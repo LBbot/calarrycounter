@@ -8,7 +8,7 @@ module.exports = function (app) {
     const urlencodedParser = bodyParser.urlencoded({ extended: false });
     // Couch functions for CRUD operations
     const couch = require("../couchFunctions");
-    const baseCouchURL = "http://127.0.0.1:5984/"; // TODO: CONFIG FILE THIS
+    const config = require("../config.json");
     // Module for validating input, performing calculations, writing JSONs and calling CouchDB requests
     const userInputFunctions = require("../userInputFunctions");
 
@@ -19,7 +19,7 @@ module.exports = function (app) {
     app.get("/food", function (req, res) {
         // GET foodList from CouchDB, render food.ejs with it
         const couchPath = "foods/_design/viewByName/_view/viewByNames";
-        couch.get(baseCouchURL, couchPath).then(function (foodList) {
+        couch.get(config.baseCouchURL, couchPath).then(function (foodList) {
             res.render("food", {
                 foodList: foodList
             });
@@ -70,7 +70,7 @@ module.exports = function (app) {
             });
         } else { // if validation success = false: re-render food.ejs showing errors and the input that caused them
             const couchPath = "foods/_design/viewByName/_view/viewByNames";
-            couch.get(baseCouchURL, couchPath).then(function (foodList) {
+            couch.get(config.baseCouchURL, couchPath).then(function (foodList) {
                 res.render("food", {
                     foodList: foodList,
                     errorList: validationOutput.content,
@@ -94,7 +94,7 @@ module.exports = function (app) {
     app.get("/edit-food-item/:id", function (req, res) {
         const id = req.params.id;
         const couchPath = "foods/" + id;
-        couch.get(baseCouchURL, couchPath).then(function (foodListItem) {
+        couch.get(config.baseCouchURL, couchPath).then(function (foodListItem) {
             res.render("edit-food-item", {
                 foodListItem: foodListItem
             });
@@ -133,7 +133,7 @@ module.exports = function (app) {
 
         if (validationOutput.success) {
             // Get the original JSON so we can edit it
-            couch.get(baseCouchURL, "foods/" + id)
+            couch.get(config.baseCouchURL, "foods/" + id)
                 .then(function (originalJSON) {
                     // Update the JSON properties with array of new content and send it back to CouchDB
                     return userInputFunctions.editJSONAndPutBack(validationOutput.content, originalJSON);
@@ -144,7 +144,7 @@ module.exports = function (app) {
                 });
         } else { // if validation success = false, re-render form with errors and the inputs that caused them
             const couchPath = "foods/" + id;
-            couch.get(baseCouchURL, couchPath).then(function (foodListItem) {
+            couch.get(config.baseCouchURL, couchPath).then(function (foodListItem) {
                 res.render("edit-food-item", {
                     foodListItem: foodListItem,
                     errorList: validationOutput.content,
@@ -167,21 +167,21 @@ module.exports = function (app) {
     app.post("/delete-food-item/:id", function (req, res) {
         // Couch needs to get the whole doc (via ID in URL) to get the REV ID to delete it
         const id = req.params.id;
-        couch.get(baseCouchURL + "foods/" + id).then(function (foodItem) {
+        couch.get(config.baseCouchURL + "foods/" + id).then(function (foodItem) {
             // We also need to get items on the calculator and loop through them so we can delete any matches
-            couch.get(baseCouchURL + "currentfood/_design/viewz/_view/viewById").then(function (calcList) {
+            couch.get(config.baseCouchURL + "currentfood/_design/viewz/_view/viewById").then(function (calcList) {
                 calcList.rows.forEach(async function (calcEntry) {
                     // If id is matched in calculator entries, delete them with their ID and rev_ID)
                     if (id === calcEntry.value[1]) {
                         const calcRevID = calcEntry.value[0];
-                        await couch.docDelete(baseCouchURL + "currentfood/", calcEntry.id, calcRevID);
+                        await couch.docDelete(config.baseCouchURL + "currentfood/", calcEntry.id, calcRevID);
                     }
                 });
 
                 // To delete original we get _rev property (linter doesn't like Couch underscores so make exception)
                 /* eslint no-underscore-dangle: ["error", { "allow": ["_rev"] }]*/
                 const revID = foodItem._rev;
-                return couch.docDelete(baseCouchURL + "foods/", id, revID);
+                return couch.docDelete(config.baseCouchURL + "foods/", id, revID);
 
             }).then(function () {
                 // Send user back to food list page.
@@ -203,8 +203,8 @@ module.exports = function (app) {
     app.get("/calculator", function (req, res) {
         const foodListCouchView = "foods/_design/viewByName/_view/viewByNames";
         const calculatorListFoodCouchView = "currentfood/_design/viewz/_view/byDate";
-        couch.get(baseCouchURL, foodListCouchView).then(function (mainFoodList) {
-            couch.get(baseCouchURL, calculatorListFoodCouchView).then(function (calculatorFoodList) {
+        couch.get(config.baseCouchURL, foodListCouchView).then(function (mainFoodList) {
+            couch.get(config.baseCouchURL, calculatorListFoodCouchView).then(function (calculatorFoodList) {
                 res.render("calculator", {
                     mainFoodList: mainFoodList,
                     calculatorFoodList: calculatorFoodList
@@ -240,8 +240,8 @@ module.exports = function (app) {
             } else { // if validation success = false, re-render form with errors and the inputs that caused them
                 const foodListCouchView = "foods/_design/viewByName/_view/viewByNames";
                 const calculatorListFoodCouchView = "currentfood/_design/viewz/_view/byDate";
-                couch.get(baseCouchURL, foodListCouchView).then(function (mainFoodList) {
-                    couch.get(baseCouchURL, calculatorListFoodCouchView).then(function (calculatorFoodList) {
+                couch.get(config.baseCouchURL, foodListCouchView).then(function (mainFoodList) {
+                    couch.get(config.baseCouchURL, calculatorListFoodCouchView).then(function (calculatorFoodList) {
                         res.render("calculator", {
                             mainFoodList: mainFoodList,
                             calculatorFoodList: calculatorFoodList,
@@ -266,10 +266,10 @@ module.exports = function (app) {
     app.post("/remove-from-calculator/:id", function (req, res) {
         // Couch needs to get the whole doc (via ID in URL) to get the REV ID to delete it
         const id = req.params.id;
-        couch.get(baseCouchURL + "currentfood/" + id).then(function (foodItem) {
+        couch.get(config.baseCouchURL + "currentfood/" + id).then(function (foodItem) {
             // Get _rev property
             const revID = foodItem._rev;
-            return couch.docDelete(baseCouchURL + "currentfood/", id, revID);
+            return couch.docDelete(config.baseCouchURL + "currentfood/", id, revID);
         }).then(function () {
             // Send user back to calculator page.
             res.redirect("/calculator");
@@ -311,8 +311,8 @@ module.exports = function (app) {
         } else { // if validation success = false, re-render calculator page with errors and the inputs that caused them
             const foodListCouchView = "foods/_design/viewByName/_view/viewByNames";
             const calculatorListFoodCouchView = "currentfood/_design/viewz/_view/byDate";
-            couch.get(baseCouchURL, foodListCouchView).then(function (mainFoodList) {
-                couch.get(baseCouchURL, calculatorListFoodCouchView).then(function (calculatorFoodList) {
+            couch.get(config.baseCouchURL, foodListCouchView).then(function (mainFoodList) {
+                couch.get(config.baseCouchURL, calculatorListFoodCouchView).then(function (calculatorFoodList) {
                     res.render("calculator", {
                         mainFoodList: mainFoodList,
                         calculatorFoodList: calculatorFoodList,
