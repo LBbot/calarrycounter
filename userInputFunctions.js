@@ -24,6 +24,9 @@ function foodListValidation(formDataArray) {
     if (formDataArray[0].trim() === "") {
         errorArray.push("Food name should not be blank.");
     }
+    if (formDataArray[0].trim().length > 45) {
+        errorArray.push("Food name should not be longer than 45 characters.");
+    }
 
     // Number validation
     for (let argNumber = 1; argNumber < formDataArray.length; argNumber += 1) {

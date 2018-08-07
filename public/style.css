@@ -52,7 +52,7 @@ li.navli {
 .tablecontainer {
     overflow-x: auto;
     overflow-y: hidden;
-    padding-bottom: 1em;
+    padding: 1em;
 }
 
 table {

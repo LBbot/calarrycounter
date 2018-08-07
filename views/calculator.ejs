@@ -83,6 +83,7 @@
             <h3>Looks like there's nothing here. Why not try adding some food?</h3> <br />
         <% } %>
 
+
         <form action="/calculator" method = "post">
             <select name="foodID" class = "foodSelect">
                 <!-- Loop through main food list to get names for selection -->
@@ -99,61 +100,62 @@
 
             <input type="submit" class="js-submit" value="Add food">
         </form>
+    </div>
 
-
-        <div class="tablecontainer">
-            <table>
-                <tablehead>
-                    <th>Name</th>
-                    <th>Amount</th>
-                    <th>Calories</th>
-                    <th>Fat</th>
-                    <th>Sat. fats</th>
-                    <th>Carbs</th>
-                    <th>Sugars</th>
-                    <th>Fibre</th>
-                    <th>Protein</th>
-                    <th>Salt</th>
-                </tablehead>
-                <!-- Loop through the different foods in the calculator list -->
-                <% for (let foodCalcNum = 0; foodCalcNum < calculatorFoodList.rows.length; foodCalcNum += 1) { %>
-                    <tr>
-                        <!-- Harcoded first 3 indexes so we can use logic on amount type (e.g. grams) -->
+    <div class="tablecontainer">
+        <table>
+            <tablehead>
+                <th>Name</th>
+                <th>Amount</th>
+                <th>Calories</th>
+                <th>Fat</th>
+                <th>Sat. fats</th>
+                <th>Carbs</th>
+                <th>Sugars</th>
+                <th>Fibre</th>
+                <th>Protein</th>
+                <th>Salt</th>
+            </tablehead>
+            <!-- Loop through the different foods in the calculator list -->
+            <% for (let foodCalcNum = 0; foodCalcNum < calculatorFoodList.rows.length; foodCalcNum += 1) { %>
+                <tr>
+                    <!-- Harcoded first 3 indexes so we can use logic on amount type (e.g. grams) -->
+                    <td>
+                        <%= calculatorFoodList.rows[foodCalcNum]["value"][0] %>
+                    </td>
+                    <td class="editAmountBox">
+                        <form action="/calculator/<%= calculatorFoodList.rows[foodCalcNum]["id"] %>" method = "post" class="edit-amount-form">
+                            <input
+                                type="text"
+                                class="editamountbox"
+                                name="editamount"
+                                size=7
+                                data-id="<%= calculatorFoodList.rows[foodCalcNum]["id"] %>"
+                                value="<%= calculatorFoodList.rows[foodCalcNum]["value"][1] %>"
+                            >
+                            <% if (calculatorFoodList.rows[foodCalcNum]["value"][2] === "grams") {%>
+                                <br>grams
+                            <% } else if (calculatorFoodList.rows[foodCalcNum]["value"][2] === "averageServing") { %>
+                                <br>serving(s)
+                            <% } %>
+                        </form>
+                    </td>
+                    <!-- Loop through array of info (the value of the object) to fill rest of table-->
+                    <% for (let nutritionNum = 3; nutritionNum < calculatorFoodList.rows[foodCalcNum]["value"].length; nutritionNum +=1 ) { %>
                         <td>
-                            <%= calculatorFoodList.rows[foodCalcNum]["value"][0] %>
+                            <%=calculatorFoodList.rows[foodCalcNum]["value"][nutritionNum]%>
                         </td>
-                        <td class="editAmountBox">
-                            <form action="/calculator/<%= calculatorFoodList.rows[foodCalcNum]["id"] %>" method = "post" class="edit-amount-form">
-                                <input
-                                    type="text"
-                                    class="editamountbox"
-                                    name="editamount"
-                                    size=7
-                                    data-id="<%= calculatorFoodList.rows[foodCalcNum]["id"] %>"
-                                    value="<%= calculatorFoodList.rows[foodCalcNum]["value"][1] %>"
-                                >
-                                <% if (calculatorFoodList.rows[foodCalcNum]["value"][2] === "grams") {%>
-                                    <br>grams
-                                <% } else if (calculatorFoodList.rows[foodCalcNum]["value"][2] === "averageServing") { %>
-                                    <br>serving(s)
-                                <% } %>
-                            </form>
-                        </td>
-                        <!-- Loop through array of info (the value of the object) to fill rest of table-->
-                        <% for (let nutritionNum = 3; nutritionNum < calculatorFoodList.rows[foodCalcNum]["value"].length; nutritionNum +=1 ) { %>
-                            <td>
-                                <%=calculatorFoodList.rows[foodCalcNum]["value"][nutritionNum]%>
-                            </td>
-                        <% } %>
-                        <!-- Remove button is given the food item's ID as param in URL for Express to retrieve -->
-                        <td>
-                            <form action="/remove-from-calculator/<%=calculatorFoodList.rows[foodCalcNum]["id"]%>" method = "post"><button class="deletebutton">Remove</button></form>
-                        </td>
-                    </tr>
-                <% } %>
-            </table>
-        </div>
+                    <% } %>
+                    <!-- Remove button is given the food item's ID as param in URL for Express to retrieve -->
+                    <td>
+                        <form action="/remove-from-calculator/<%=calculatorFoodList.rows[foodCalcNum]["id"]%>" method = "post"><button class="deletebutton">Remove</button></form>
+                    </td>
+                </tr>
+            <% } %>
+        </table>
+    </div>
 
+    <div class = "content">
         <!-- Pie chart here (checks if any carbs, protein or fat total more than 0 so it can make chart)-->
         <% if (getTotals(4) + getTotals(6) + getTotals(9) > 0) { %>
             <h2>Macronutrient split</h3>

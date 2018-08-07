@@ -27,7 +27,7 @@
 
         <form action="/food" method = "post">
             <label for="name">Name:  </label>
-            <input type="text" id="name" name="name"
+            <input type="text" id="name" name="name" maxlength="45"
                 <% if (typeof errorList !== "undefined") { %>
                     value="<%= previousUserInput[0] %>"
                 <% } %>
@@ -105,6 +105,8 @@
             <li>- Decimal figures are rounded down to two places. </li>
             <li>- If the information is unavailable, unlisted or not applicable - leave it blank.</li>
         </ul>
+    </div>
+
 
     <!-- tablecontainer CSS allows the table to have it's own horizontal scroll on smaller screens. -->
     <div class="tablecontainer">
@@ -139,65 +141,65 @@
                 </tr>
             <% } %>
         </table>
+    </div>
+
+
+    <!-- Modal only appears on delete-->
+    <div class="myModal myModal--hidden">
+        <div class="modalContent">
+            <p>Are you sure you want to delete this item?</p>
+            <p class = "quote"></p>
+            <form method = "post"><button class="ok js-submit">Delete</button></form>
+            <button class="cancel cancelbutton">Cancel</button>
         </div>
+    </div>
 
 
-        <!-- Modal only appears on delete-->
-       <div class="myModal myModal--hidden">
-       <div class="modalContent">
-           <p>Are you sure you want to delete this item?</p>
-           <p class = "quote"></p>
-           <form method = "post"><button class="ok js-submit">Delete</button></form>
-           <button class="cancel cancelbutton">Cancel</button>
-       </div>
-       </div>
+    <div class = "content">
+        <p>Amounts marked *0 denote an unlisted or unavailable number.</p>
+
+        <%- include("footer") %>
+    </div>
 
 
-    <p>Amounts marked *0 denote an unlisted or unavailable number.</p>
+    <script>
+        function summonModal(evt) {
+            "use strict";
+            const deleteIcon = evt.target;
+            const number = deleteIcon.getAttribute("data-id");
+            // Prep the item to show in the modal, sanitise it
+            const quoteForList = document.querySelector(".quote");
+            const inputValue = evt.target.parentNode.parentNode.childNodes[3].textContent;
+            const textNodeInput = document.createTextNode(inputValue);
+            quoteForList.innerHTML = ""; // Resets the quote so it doesn't add to old ones.
+            quoteForList.appendChild(textNodeInput);
 
-    <%- include("footer") %>
-</div>
+            // Show modal
+            const backgroundModal = document.querySelector(".myModal");
+            const modalBox = document.querySelector(".modalContent");
+            backgroundModal.classList.remove("myModal--hidden");
 
-
-<script>
-function summonModal(evt) {
-    "use strict";
-    const deleteIcon = evt.target;
-    const number = deleteIcon.getAttribute("data-id");
-    // Prep the item to show in the modal, sanitise it
-    const quoteForList = document.querySelector(".quote");
-    const inputValue = evt.target.parentNode.parentNode.childNodes[3].textContent;
-    const textNodeInput = document.createTextNode(inputValue);
-    quoteForList.innerHTML = ""; // Resets the quote so it doesn't add to old ones.
-    quoteForList.appendChild(textNodeInput);
-
-    // Show modal
-    const backgroundModal = document.querySelector(".myModal");
-    const modalBox = document.querySelector(".modalContent");
-    backgroundModal.classList.remove("myModal--hidden");
-
-    const yesButton = document.querySelector(".ok");
-    const noButton = document.querySelector(".cancel");
-    yesButton.parentNode.action = "/delete-food-item/" + number;
+            const yesButton = document.querySelector(".ok");
+            const noButton = document.querySelector(".cancel");
+            yesButton.parentNode.action = "/delete-food-item/" + number;
 
 
-    function killModal (e) {
-        if (e.target === backgroundModal || e.target === noButton) {
-            backgroundModal.classList.add("myModal--hidden");
-            window.removeEventListener("click", killModal);
-            noButton.removeEventListener("click", killModal);
+            function killModal (e) {
+                if (e.target === backgroundModal || e.target === noButton) {
+                    backgroundModal.classList.add("myModal--hidden");
+                    window.removeEventListener("click", killModal);
+                    noButton.removeEventListener("click", killModal);
+                }
+            }
+            noButton.addEventListener("click", killModal);
+            window.addEventListener("click", killModal);
         }
-    }
-    noButton.addEventListener("click", killModal);
-    window.addEventListener("click", killModal);
-}
 
-const deleteButtons = document.querySelectorAll(".deletebutton");
-deleteButtons.forEach(function (deleteButton) {
-    deleteButton.addEventListener("click", summonModal);
-});
-
-</script>
+        const deleteButtons = document.querySelectorAll(".deletebutton");
+        deleteButtons.forEach(function (deleteButton) {
+            deleteButton.addEventListener("click", summonModal);
+        });
+    </script>
 
 </body>
 </html>
