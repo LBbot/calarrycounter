@@ -1,6 +1,7 @@
 "use strict";
 // Exporting all of this content as a function to be used by app.js
 module.exports = function (app) {
+    const bcrypt = require("bcrypt");
 
 
     // Bodyparser for JSONs
@@ -330,60 +331,16 @@ module.exports = function (app) {
     });
 
 
-    app.get("/", function (req, res) {
-        res.render("index");
-    });
-
-
-    app.get("/login", function (req, res) {
-        res.render("login");
-    });
-    app.post("/login", urlencodedParser, function (req, res) {
-        const inputUsername = req.body.username;
-        const inputPassword = req.body.password;
-
-        couch.get(config.baseCouchURL, "ccusers/_design/views/_view/nameList").then(function (listOfNames) {
-            // listOfNames is an object with an array called rows which has the docs in the view of users
-
-
-            const bcrypt = require("bcrypt");
-            const errorArray = [];
-            let foundUsername = false;
-            let correctPassword = false;
-
-            for (const doc of listOfNames.rows) {
-                // .key property has the name in each doc using this view
-                if (inputUsername === doc.key) {
-                    foundUsername = true;
-                    if (bcrypt.compareSync(inputPassword, doc.value)) {
-                        correctPassword = true;
-                    } else {
-                        errorArray.push("Password does not match.");
-                    }
-                    break;
-                }
-            }
-
-            if (foundUsername === false) {
-                errorArray.push("Username not on record.");
-            }
-
-            if (errorArray.length > 0) {
-                res.render("login", {
-                    errorList: errorArray,
-                    previousUserInput: [req.body.username, req.body.password]
-                });
-            } else {
-                res.send("password match!");
-            }
-        });
-    });
-
-
+    /*
+    Register page (register.ejs)
+    And POST for when the form is submitted which validates, preps the json and posts a new user to Couch
+    */
     app.get("/register", function (req, res) {
         res.render("register");
     });
+
     app.post("/register", urlencodedParser, function (req, res) {
+        // Collect username, password and password repeated for confirmation into an array
         const formDataAsArray = [
             req.body.username,
             req.body.password,
@@ -391,12 +348,12 @@ module.exports = function (app) {
         ];
         // Validate/sanitise that info, and if successful, package into JSON
         userInputFunctions.userRegistrationValidation(formDataAsArray).then(function (validationOutput) {
-
             if (validationOutput.success) {
                 // Set up URL for posting to Couch
                 const postURL = config.baseCouchURL + "ccusers/";
-                // Post JSON with username and password to CouchDB
+                // Post JSON with username and password to CouchDB, then redirect to login page for the moment
                 couch.post(postURL, validationOutput.content).then(function () {
+                    // TODO: welcome screen later with an explanation????
                     res.redirect("login");
                 }).catch(function (err) { // Database errors
                     if (err.message.indexOf("ECONNREFUSED") > 0) {
@@ -414,14 +371,76 @@ module.exports = function (app) {
         });
     });
 
+
+    /*
+    Log in page (login.ejs)
+    And POST for when the form is submitted which AT THE MOMENT ONLY CHECKS IF PASSWORD MATCHES
+    */
+    app.get("/login", function (req, res) {
+        res.render("login");
+    });
+
+    app.post("/login", urlencodedParser, function (req, res) {
+        const inputUsername = req.body.username;
+        const inputPassword = req.body.password;
+
+        // TODO: figure out if this should be in userinputfunctions (it probably should)
+        // get list of names to loop through to try and match up and and get the hashed password
+        couch.get(config.baseCouchURL, "ccusers/_design/views/_view/nameList").then(function (listOfNames) {
+            // Any errors in validation will be added to this. If it's not empty by the end, it will be returned
+            const errorArray = [];
+            // set this flag up so we can check if it becomes true when we find the username
+            let foundUsername = false;
+
+            // listOfNames is an object with an array called rows which has the docs in the view
+            for (const doc of listOfNames.rows) {
+                // .key property has the name in each doc using this view (and we ignore upper/lower case)
+                if (inputUsername.toLowerCase() === doc.key.toLowerCase()) {
+                    foundUsername = true;
+                    // value has the hashed password for the user
+                    if (bcrypt.compareSync(inputPassword, doc.value) === false) {
+                        errorArray.push("Password does not match.");
+                    }
+                    break;
+                }
+            }
+
+            // Check this after the for loop because then we know if it failed
+            if (foundUsername === false) {
+                errorArray.push("Username not on record.");
+            }
+
+            // if any errors, re-render form with errors and the inputs that caused them
+            if (errorArray.length > 0) {
+                res.render("login", {
+                    errorList: errorArray,
+                    previousUserInput: [req.body.username]
+                });
+            } else { // TODO: success! let's log you in.
+                res.send("password match!");
+            }
+        });
+    });
+
+
+
     app.get("/logout", function (req, res) {
         // Do something to log user out and send back to homepage I guess
         res.redirect("/");
     });
 
+
     app.get("/account", function (req, res) {
         // do something with user stuff here
         res.send("nothing here yet");
+    });
+
+
+    /*
+    homepage - index.ejs
+    */
+    app.get("/", function (req, res) {
+        res.render("index");
     });
 
 

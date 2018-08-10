@@ -321,8 +321,8 @@ function userRegistrationValidation(arrayOfUsernamePasswordAndPasswordConfirm) {
     return couch.get(config.baseCouchURL, "ccusers/_design/views/_view/nameList").then(function (listOfNames) {
         // listOfNames is an object with an array called rows which has the docs in the view of users
         for (const doc of listOfNames.rows) {
-            // .key property has the name in each doc using this view
-            if (username === doc.key) {
+            // .key property has the name in each doc using this view (and we won't distinguish uppercase and lowercase)
+            if (username.toLowerCase() === doc.key.toLowerCase()) {
                 errorArray.push("That username is unavailable.");
                 break;
             }
