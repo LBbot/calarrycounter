@@ -24,21 +24,19 @@
         <% } %>
 
 
-        <form action="/login" method = "post">
-            <label for="email">Email:  </label>
-            <input type="text" id="email" name="email"
+        <form action="/register" method = "post">
+            <label for="username">Username:  </label>
+            <input type="text" id="username" name="username" maxlength="25" autofocus
                 <% if (typeof errorList !== "undefined") { %>
                     value="<%= previousUserInput[0] %>"
                 <% } %>
             ><br>
 
             <label for="password">Password: </label>
-            <input type="text" id="password" name="password"
-            ><br>
+            <input type="text" id="password" name="password" maxlength="256"><br>
 
             <label for="passwordconfirm">Confirm password: </label>
-            <input type="text" id="passwordconfirm" name="passwordconfirm"
-            ><br>
+            <input type="text" id="passwordconfirm" name="passwordconfirm" maxlength="256"><br>
 
             <input type="submit" class="js-submit" value="Register">
         </form>

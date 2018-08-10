@@ -25,15 +25,15 @@
 
 
         <form action="/login" method = "post">
-            <label for="email">Email:  </label>
-            <input type="text" id="email" name="email"
+            <label for="username">Username:  </label>
+            <input type="text" id="username" name="username" maxlength="25" autofocus
                 <% if (typeof errorList !== "undefined") { %>
                     value="<%= previousUserInput[0] %>"
                 <% } %>
             ><br>
 
             <label for="password">Password: </label>
-            <input type="text" id="password" name="password"
+            <input type="text" id="password" name="password" maxlength="256"
                 <% if (typeof errorList !== "undefined") { %>
                     value="<%= previousUserInput[1] %>"
                 <% } %>

@@ -2,6 +2,7 @@
 // Couch functions for CRUD operations
 const couch = require("./couchFunctions.js");
 const config = require("./config.json");
+const bcrypt = require("bcrypt");
 
 
 function foodListValidation(formDataArray) {
@@ -269,6 +270,93 @@ function amountRecalculationAndPutJSON(calcListID, newAmount) {
 }
 
 
+function userRegistrationValidation(arrayOfUsernamePasswordAndPasswordConfirm) {
+    // Any errors in validation will be added to this. If it's not empty by the end, it will be returned
+    const errorArray = [];
+
+    // check password matches passwordconfirm first
+    if (arrayOfUsernamePasswordAndPasswordConfirm[1] !== arrayOfUsernamePasswordAndPasswordConfirm[2]) {
+        errorArray.push("Password and confirmation must match.");
+    }
+
+    // Make sure username and password are strings, convert them if needed
+    if (typeof arrayOfUsernamePasswordAndPasswordConfirm[0] !== "string") {
+        try {
+            arrayOfUsernamePasswordAndPasswordConfirm[0] = String(arrayOfUsernamePasswordAndPasswordConfirm[0]);
+        } catch (err) {
+            errorArray.push("Username should be a string value." + err);
+        }
+    }
+    if (typeof arrayOfUsernamePasswordAndPasswordConfirm[1] !== "string") {
+        try {
+            arrayOfUsernamePasswordAndPasswordConfirm[1] = String(arrayOfUsernamePasswordAndPasswordConfirm[1]);
+        } catch (err) {
+            errorArray.push("Password should be a string value." + err);
+        }
+    }
+
+    // USERNAME validation
+    const username = arrayOfUsernamePasswordAndPasswordConfirm[0].trim();
+    if (username === "") {
+        errorArray.push("Username cannot be blank.");
+    }
+    if (username.length > 25) {
+        errorArray.push("Username cannot be more than 25 characters in length.");
+    }
+    // test that name includes only alphanumeric characters with underscores (\w) and hyphens
+    if (/^[\w-]+$/.test(username) === false) {
+        errorArray.push("Username can only include letters, numbers, underscores and hyphens.");
+    }
+
+    // PASSWORD validation
+    if (arrayOfUsernamePasswordAndPasswordConfirm[1] === "") {
+        errorArray.push("Password cannot be blank.");
+    }
+    // Because a trillion character password could slow things down
+    if (arrayOfUsernamePasswordAndPasswordConfirm[1].length > 256) {
+        errorArray.push("Password cannot be more than 256 characters.");
+    }
+
+    // check username isn't already taken
+    return couch.get(config.baseCouchURL, "ccusers/_design/views/_view/nameList").then(function (listOfNames) {
+        // listOfNames is an object with an array called rows which has the docs in the view of users
+        for (const doc of listOfNames.rows) {
+            // .key property has the name in each doc using this view
+            if (username === doc.key) {
+                errorArray.push("That username is unavailable.");
+                break;
+            }
+        }
+    }).then(function () {
+        // SALT, THEN HASH PASSWORD, THEN SET UP JSON
+        const password = arrayOfUsernamePasswordAndPasswordConfirm[1];
+        const saltRounds = 10;
+        const salt = bcrypt.genSaltSync(saltRounds);
+        const hash = bcrypt.hashSync(password, salt);
+        const hashedPassword = hash;
+
+        // If anything in errorArray: return it, otherwise return validated fields as a JSON
+        if (errorArray.length > 0) {
+            return {
+                success: false,
+                content: errorArray
+            };
+        } // IMPLIED ELSE
+        const userJSON = {
+            "username": username,
+            "password": hashedPassword
+        };
+        return {
+            success: true,
+            content: userJSON
+        };
+    }).catch(function (err) { // Database errors
+        if (err.message.indexOf("ECONNREFUSED") > 0) {
+            errorArray.push("Error connecting to database.");
+        }
+    });
+}
+
 
 // main food list exports
 module.exports.foodListValidation = foodListValidation;
@@ -280,3 +368,6 @@ module.exports.validateAndCalculateFromAmount = validateAndCalculateFromAmount;
 module.exports.writeJSONAndAddToCalculatorList = writeJSONAndAddToCalculatorList;
 module.exports.amountValidationOnly = amountValidationOnly;
 module.exports.amountRecalculationAndPutJSON = amountRecalculationAndPutJSON;
+
+// User page exports
+module.exports.userRegistrationValidation = userRegistrationValidation;

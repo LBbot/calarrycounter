@@ -329,16 +329,89 @@ module.exports = function (app) {
         }
     });
 
+
     app.get("/", function (req, res) {
         res.render("index");
     });
 
+
     app.get("/login", function (req, res) {
         res.render("login");
     });
+    app.post("/login", urlencodedParser, function (req, res) {
+        const inputUsername = req.body.username;
+        const inputPassword = req.body.password;
+
+        couch.get(config.baseCouchURL, "ccusers/_design/views/_view/nameList").then(function (listOfNames) {
+            // listOfNames is an object with an array called rows which has the docs in the view of users
+
+
+            const bcrypt = require("bcrypt");
+            const errorArray = [];
+            let foundUsername = false;
+            let correctPassword = false;
+
+            for (const doc of listOfNames.rows) {
+                // .key property has the name in each doc using this view
+                if (inputUsername === doc.key) {
+                    foundUsername = true;
+                    if (bcrypt.compareSync(inputPassword, doc.value)) {
+                        correctPassword = true;
+                    } else {
+                        errorArray.push("Password does not match.");
+                    }
+                    break;
+                }
+            }
+
+            if (foundUsername === false) {
+                errorArray.push("Username not on record.");
+            }
+
+            if (errorArray.length > 0) {
+                res.render("login", {
+                    errorList: errorArray,
+                    previousUserInput: [req.body.username, req.body.password]
+                });
+            } else {
+                res.send("password match!");
+            }
+        });
+    });
+
 
     app.get("/register", function (req, res) {
         res.render("register");
+    });
+    app.post("/register", urlencodedParser, function (req, res) {
+        const formDataAsArray = [
+            req.body.username,
+            req.body.password,
+            req.body.passwordconfirm
+        ];
+        // Validate/sanitise that info, and if successful, package into JSON
+        userInputFunctions.userRegistrationValidation(formDataAsArray).then(function (validationOutput) {
+
+            if (validationOutput.success) {
+                // Set up URL for posting to Couch
+                const postURL = config.baseCouchURL + "ccusers/";
+                // Post JSON with username and password to CouchDB
+                couch.post(postURL, validationOutput.content).then(function () {
+                    res.redirect("login");
+                }).catch(function (err) { // Database errors
+                    if (err.message.indexOf("ECONNREFUSED") > 0) {
+                        res.status(503).render("error", {
+                            errorInfo: "Error connecting to database. Please try again later."
+                        });
+                    }
+                });
+            } else { // if validation success = false, re-render form with errors and the inputs that caused them
+                res.render("register", {
+                    errorList: validationOutput.content,
+                    previousUserInput: formDataAsArray
+                });
+            }
+        });
     });
 
     app.get("/logout", function (req, res) {
