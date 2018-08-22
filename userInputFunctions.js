@@ -327,10 +327,14 @@ function userRegistrationValidation(arrayOfUsernamePasswordAndPasswordConfirm) {
                 break;
             }
         }
+    }).catch(function (err) { // Database errors
+        if (err.message.indexOf("ECONNREFUSED") > 0) {
+            errorArray.push("Error connecting to database.");
+        }
     }).then(function () {
         // SALT, THEN HASH PASSWORD, THEN SET UP JSON
         const password = arrayOfUsernamePasswordAndPasswordConfirm[1];
-        const saltRounds = 10;
+        const saltRounds = 12;
         const salt = bcrypt.genSaltSync(saltRounds);
         const hash = bcrypt.hashSync(password, salt);
         const hashedPassword = hash;
@@ -341,7 +345,7 @@ function userRegistrationValidation(arrayOfUsernamePasswordAndPasswordConfirm) {
                 success: false,
                 content: errorArray
             };
-        } // IMPLIED ELSE
+        } // else no errors:
         const userJSON = {
             "username": username,
             "password": hashedPassword
@@ -350,12 +354,54 @@ function userRegistrationValidation(arrayOfUsernamePasswordAndPasswordConfirm) {
             success: true,
             content: userJSON
         };
+    });
+}
+
+
+function logIn(inputUsername, inputPassword) {
+    // Any errors in validation will be added to this. If it's not empty by the end, it will be returned
+    const errorArray = [];
+
+    // get list of names to loop through to try and match up and and get the hashed password
+    return couch.get(config.baseCouchURL, "ccusers/_design/views/_view/nameList").then(function (listOfNames) {
+        // set this flag up so we can check if it becomes true when we find the username
+        let foundUsername = false;
+
+        // listOfNames is an object with an array called rows which has the docs in the view
+        for (const doc of listOfNames.rows) {
+            // .key property has the name in each doc using this view (and we ignore upper/lower case)
+            if (inputUsername.toLowerCase() === doc.key.toLowerCase()) {
+                foundUsername = true;
+                // value has the hashed password for the user
+                if (bcrypt.compareSync(inputPassword, doc.value) === false) {
+                    errorArray.push("Password does not match.");
+                }
+                break;
+            }
+        }
+
+        // Check this after the for loop because then we know if it failed
+        if (foundUsername === false) {
+            errorArray.push("Username not on record.");
+        }
+
     }).catch(function (err) { // Database errors
         if (err.message.indexOf("ECONNREFUSED") > 0) {
             errorArray.push("Error connecting to database.");
         }
+    }).then(function () {
+        if (errorArray.length > 0) {
+            return {
+                success: false,
+                content: errorArray
+            };
+        } // else no errors:
+        return {
+            success: true
+        };
     });
 }
+
 
 
 // main food list exports
@@ -371,3 +417,4 @@ module.exports.amountRecalculationAndPutJSON = amountRecalculationAndPutJSON;
 
 // User page exports
 module.exports.userRegistrationValidation = userRegistrationValidation;
+module.exports.logIn = logIn;

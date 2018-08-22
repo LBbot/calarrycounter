@@ -3,6 +3,8 @@
 module.exports = function (app) {
     const bcrypt = require("bcrypt");
 
+    const passport = require("passport");
+    const LocalStrategy = require("passport-local").Strategy;
 
     // Bodyparser for JSONs
     const bodyParser = require("body-parser");
@@ -17,7 +19,7 @@ module.exports = function (app) {
     /*
     Food page (food.ejs) - has form to add food and a list of any added food
     */
-    app.get("/food", function (req, res) {
+    app.get("/food", isLoggedIn, function (req, res) {
         // GET foodList from CouchDB, render food.ejs with it
         const couchPath = "foods/_design/viewByName/_view/viewByNames";
         couch.get(config.baseCouchURL, couchPath).then(function (foodList) {
@@ -92,7 +94,7 @@ module.exports = function (app) {
     Edit food list item:
     GET single CouchDB doc from id in URL to pre-fill an ediatable form in edit-food-item.ejs
     */
-    app.get("/edit-food-item/:id", function (req, res) {
+    app.get("/edit-food-item/:id", isLoggedIn, function (req, res) {
         const id = req.params.id;
         const couchPath = "foods/" + id;
         couch.get(config.baseCouchURL, couchPath).then(function (foodListItem) {
@@ -201,7 +203,7 @@ module.exports = function (app) {
     /*
     Calculator - gets main food list, and a list of foods added to the calculator in order to render calculator.ejs
     */
-    app.get("/calculator", function (req, res) {
+    app.get("/calculator", isLoggedIn, function (req, res) {
         const foodListCouchView = "foods/_design/viewByName/_view/viewByNames";
         const calculatorListFoodCouchView = "currentfood/_design/viewz/_view/byDate";
         couch.get(config.baseCouchURL, foodListCouchView).then(function (mainFoodList) {
@@ -340,7 +342,7 @@ module.exports = function (app) {
     });
 
     app.post("/register", urlencodedParser, function (req, res) {
-        // Collect username, password and password repeated for confirmation into an array
+        // Collect username, password (and password repeated for confirmation) into an array
         const formDataAsArray = [
             req.body.username,
             req.body.password,
@@ -384,55 +386,39 @@ module.exports = function (app) {
         const inputUsername = req.body.username;
         const inputPassword = req.body.password;
 
-        // TODO: figure out if this should be in userinputfunctions (it probably should)
-        // get list of names to loop through to try and match up and and get the hashed password
-        couch.get(config.baseCouchURL, "ccusers/_design/views/_view/nameList").then(function (listOfNames) {
-            // Any errors in validation will be added to this. If it's not empty by the end, it will be returned
-            const errorArray = [];
-            // set this flag up so we can check if it becomes true when we find the username
-            let foundUsername = false;
-
-            // listOfNames is an object with an array called rows which has the docs in the view
-            for (const doc of listOfNames.rows) {
-                // .key property has the name in each doc using this view (and we ignore upper/lower case)
-                if (inputUsername.toLowerCase() === doc.key.toLowerCase()) {
-                    foundUsername = true;
-                    // value has the hashed password for the user
-                    if (bcrypt.compareSync(inputPassword, doc.value) === false) {
-                        errorArray.push("Password does not match.");
-                    }
-                    break;
-                }
-            }
-
-            // Check this after the for loop because then we know if it failed
-            if (foundUsername === false) {
-                errorArray.push("Username not on record.");
-            }
-
-            // if any errors, re-render form with errors and the inputs that caused them
-            if (errorArray.length > 0) {
+        userInputFunctions.logIn(inputUsername, inputPassword).then(function (validationOutput) {
+            if (validationOutput.success) { // TODO: success! let's log you in.
+                res.send("password match!");
+            } else { // if any errors, re-render form with errors and the inputs that caused them
                 res.render("login", {
-                    errorList: errorArray,
+                    errorList: validationOutput.content,
                     previousUserInput: [req.body.username]
                 });
-            } else { // TODO: success! let's log you in.
-                res.send("password match!");
             }
         });
     });
 
 
-
     app.get("/logout", function (req, res) {
-        // Do something to log user out and send back to homepage I guess
+        // TODO: check if this works
+        req.logout();
         res.redirect("/");
     });
 
 
-    app.get("/account", function (req, res) {
+    // TODO: REWRITE THIS
+    // route middleware to make sure a user is logged in
+    function isLoggedIn(req, res, next) {
+        // if user is authenticated in the session, carry on
+        if (req.isAuthenticated()) {
+            return next();
+        }
+        // if they aren't redirect them to the home page
+        res.redirect("/login");
+    }
+    app.get("/account", isLoggedIn, function (req, res) {
         // do something with user stuff here
-        res.send("nothing here yet");
+        res.render("account");
     });
 
 
