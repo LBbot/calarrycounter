@@ -339,6 +339,7 @@ function userRegistrationValidation(arrayOfUsernamePasswordAndPasswordConfirm) {
         const hash = bcrypt.hashSync(password, salt);
         const hashedPassword = hash;
 
+
         // If anything in errorArray: return it, otherwise return validated fields as a JSON
         if (errorArray.length > 0) {
             return {
